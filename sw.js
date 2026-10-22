@@ -1,6 +1,29 @@
-const APP_CACHE = 'lesestapel-app-v1';
+const APP_CACHE = 'booklover-app-v2';
 const COVER_CACHE = 'lesestapel-covers';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icon-192.png',
+  './icon-512.png',
+  './css/theme.css',
+  './css/base.css',
+  './css/views.css',
+  './css/dialogs.css',
+  './js/main.js',
+  './js/ui.js',
+  './js/logic.js',
+  './js/store.js',
+  './js/api.js',
+  './js/templates.js',
+  './js/views/library.js',
+  './js/views/series.js',
+  './js/views/random.js',
+  './js/views/settings.js',
+  './js/dialogs/edit.js',
+  './js/dialogs/add.js'
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(APP_CACHE).then(c => c.addAll(ASSETS)));
@@ -20,7 +43,6 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
-  // Eigene Dateien: zuerst Netz (damit Updates ankommen), sonst Cache
   if (url.origin === location.origin) {
     e.respondWith(
       fetch(e.request)
@@ -34,7 +56,6 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cover-Bilder: einmal laden, dann offline verfügbar
   if (e.request.destination === 'image') {
     e.respondWith(
       caches.open(COVER_CACHE).then(async c => {
