@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1F2A44">
-<title>Lesestapel</title>
+<title>Booklover</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <style>
@@ -36,7 +36,6 @@ button{cursor:pointer}
 main{padding:12px 16px calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 90px);max-width:720px;margin:0 auto}
 .view{display:none}.view.active{display:block}
 
-/* Navigation */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 .tabs button{background:none;border:0;height:var(--nav-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.75rem;color:var(--muted)}
 .tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -45,7 +44,6 @@ main{padding:12px 16px calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 90p
 .fab{position:fixed;right:18px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 16px);z-index:6;width:58px;height:58px;border-radius:18px;border:0;background:var(--accent);color:var(--on-accent);font-size:2rem;line-height:1;box-shadow:0 4px 14px rgba(31,42,68,.28)}
 .fab[hidden]{display:none}
 
-/* Controls */
 input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-height:44px}
 textarea{min-height:80px;resize:vertical}
 label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:10px}
@@ -64,7 +62,6 @@ label input,label select,label textarea{margin-top:4px;color:var(--text);font-si
 .toolbar{display:grid;gap:8px;margin-bottom:12px}
 .hint{color:var(--muted);font-size:.85rem;margin:6px 0 0}
 
-/* Bücherliste */
 .books{list-style:none;margin:0;padding:0}
 .book{display:flex;gap:14px;padding:12px 4px;border-bottom:1px solid var(--line);align-items:flex-start}
 .book:active{background:var(--surface)}
@@ -84,7 +81,6 @@ label input,label select,label textarea{margin-top:4px;color:var(--text);font-si
 .empty{text-align:center;color:var(--muted);padding:48px 16px}
 .empty strong{display:block;font:600 1.2rem var(--serif);color:var(--ink);margin-bottom:6px}
 
-/* Reihen */
 .series-block{margin:0 0 22px}
 .series-block h2{font:600 1.2rem/1.2 var(--serif);margin:0;color:var(--ink)}
 .series-block .sub{color:var(--muted);font-size:.85rem;margin:2px 0 8px}
@@ -97,7 +93,6 @@ label input,label select,label textarea{margin-top:4px;color:var(--text);font-si
 .vol .vt{flex:1;min-width:0;font-family:var(--serif)}
 .vol .vs{font-size:.78rem;color:var(--muted)}
 
-/* Zufall: der Stapel */
 .pile{display:flex;flex-direction:column-reverse;align-items:center;gap:3px;padding:20px 0 8px;min-height:120px}
 .spine{height:26px;border-radius:3px;display:flex;align-items:center;padding:0 12px;color:#fff;font:600 .78rem/1 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);transition:transform .25s ease,filter .15s}
 .spine.flash{filter:brightness(1.35);transform:translateX(6px)}
@@ -111,13 +106,11 @@ label input,label select,label textarea{margin-top:4px;color:var(--text);font-si
 .pick.show{animation:rise .35s ease-out}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-/* Einstellungen */
 .set h2{font:600 1.15rem var(--serif);color:var(--ink);margin:22px 0 8px}
 .set-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 .set-item span{flex:1}
 .icon-btn{background:none;border:0;min-width:44px;min-height:44px;color:var(--muted);font-size:1rem}
 
-/* Dialoge */
 dialog{border:0;padding:0;background:var(--surface);color:var(--text)}
 dialog::backdrop{background:rgba(10,14,22,.55)}
 dialog.sheet{width:100%;max-width:640px;max-height:92dvh;margin:auto auto 0;border-radius:18px 18px 0 0;display:none;flex-direction:column}
@@ -156,7 +149,6 @@ dialog.scan[open]{display:flex;flex-direction:column}
 <header class="top"><h1 id="viewTitle">Bibliothek</h1><span class="count" id="count"></span></header>
 
 <main>
-  <!-- Bibliothek -->
   <section class="view active" id="v-library">
     <div class="toolbar">
       <input type="search" id="q" placeholder="Suche nach Titel, Autor, Reihe oder ISBN" aria-label="Suche">
@@ -180,12 +172,10 @@ dialog.scan[open]{display:flex;flex-direction:column}
     <div class="empty" id="emptyLib" hidden></div>
   </section>
 
-  <!-- Reihen -->
   <section class="view" id="v-series">
     <div id="seriesWrap"></div>
   </section>
 
-  <!-- Zufall -->
   <section class="view" id="v-random">
     <div class="pile" id="pile" aria-hidden="true"></div>
     <div class="pick" id="pick" hidden></div>
@@ -196,7 +186,6 @@ dialog.scan[open]{display:flex;flex-direction:column}
     <p class="hint" id="randInfo"></p>
   </section>
 
-  <!-- Einstellungen -->
   <section class="view set" id="v-settings">
     <h2>Listen</h2>
     <div id="setLists"></div>
@@ -226,7 +215,6 @@ dialog.scan[open]{display:flex;flex-direction:column}
   <button data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9 7 7m10 10 2.1 2.1M4.9 19.1 7 17m10-10 2.1-2.1"/></svg>Einstellungen</button>
 </nav>
 
-<!-- Hinzufügen -->
 <dialog class="sheet" id="dlgAdd">
   <div class="sheet-head"><h2>Buch hinzufügen</h2><button class="icon-btn" data-close aria-label="Schließen">✕</button></div>
   <div class="sheet-body add-opts">
@@ -239,7 +227,6 @@ dialog.scan[open]{display:flex;flex-direction:column}
   </div>
 </dialog>
 
-<!-- Scanner -->
 <dialog class="scan" id="dlgScan">
   <video id="video" playsinline muted></video>
   <div class="reticle"></div>
@@ -251,7 +238,6 @@ dialog.scan[open]{display:flex;flex-direction:column}
   </div>
 </dialog>
 
-<!-- Bearbeiten -->
 <dialog class="sheet" id="dlgEdit">
   <div class="sheet-head"><h2 id="editHead">Buch</h2><button class="icon-btn" data-close aria-label="Schließen">✕</button></div>
   <div class="sheet-body">
@@ -602,7 +588,7 @@ $('#exportBtn').onclick = () => {
   const blob = new Blob([JSON.stringify(db, null, 1)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `lesestapel-sicherung-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `booklover-sicherung-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   toast('Sicherung exportiert');
@@ -614,7 +600,7 @@ $('#importFile').onchange = async e => {
     const d = normalize(JSON.parse(await f.text()));
     if (!confirm(`Sicherung mit ${d.books.length} Büchern importieren? Die aktuellen Daten werden dabei ersetzt.`)) return;
     db = d; save(); toast('Sicherung importiert'); renderAll();
-  } catch (err) { toast('Die Datei ist keine gültige Lesestapel-Sicherung.'); }
+  } catch (err) { toast('Die Datei ist keine gültige Booklover-Sicherung.'); }
   e.target.value = '';
 };
 $('#wipeBtn').onclick = () => {
