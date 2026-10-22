@@ -1,6 +1,6 @@
 {
-  "name": "Lesestapel",
-  "short_name": "Lesestapel",
+  "name": "Booklover",
+  "short_name": "Booklover",
   "description": "Bücher verwalten und das nächste Buch ziehen – mit Reihen-Logik.",
   "lang": "de",
   "start_url": "./",
