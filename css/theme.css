@@ -1,0 +1,35 @@
+/* Farben, Schriften und Maße – hier lässt sich das Aussehen zentral ändern */
+:root {
+  --bg: #F5F6F3;
+  --surface: #FFFFFF;
+  --ink: #1F2A44;
+  --text: #1C2130;
+  --muted: #5F6775;
+  --line: #E1E3DE;
+  --accent: #E0A526;
+  --on-accent: #2A1F05;
+  --teal: #3E7C74;
+  --danger: #B4483A;
+
+  --serif: "Noto Serif", "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: system-ui, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --nav-h: 64px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12161D;
+    --surface: #1B212C;
+    --ink: #C9D3EA;
+    --text: #E7E8EA;
+    --muted: #9AA3B2;
+    --line: #2A3240;
+    --accent: #F0B93A;
+    --on-accent: #241A02;
+    --teal: #6FB3A8;
+    --danger: #E07A6B;
+    color-scheme: dark;
+  }
+}

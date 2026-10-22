@@ -1,0 +1,53 @@
+/* ---------- Dialoge (Bottom Sheets) ---------- */
+dialog { border: 0; padding: 0; background: var(--surface); color: var(--text); }
+dialog::backdrop { background: rgba(10, 14, 22, .55); }
+
+dialog.sheet {
+  width: 100%; max-width: 640px; max-height: 92dvh;
+  margin: auto auto 0; border-radius: 18px 18px 0 0;
+  display: none; flex-direction: column;
+}
+dialog.sheet[open] { display: flex; }
+.sheet-head { display: flex; align-items: center; padding: 14px 12px 6px 18px; }
+.sheet-head h2 { flex: 1; margin: 0; font: 600 1.25rem var(--serif); color: var(--ink); }
+.sheet-body { padding: 6px 18px 12px; overflow-y: auto; }
+.sheet-foot {
+  display: flex; gap: 8px; border-top: 1px solid var(--line);
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+fieldset { border: 0; padding: 0; margin: 0 0 14px; }
+legend { font-size: .85rem; color: var(--muted); padding: 0; margin-bottom: 6px; }
+details summary { color: var(--muted); font-size: .9rem; padding: 8px 0; cursor: pointer; }
+
+.edit-top { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 6px; }
+.nr { max-width: 90px; }
+.add-opts { display: grid; gap: 12px; padding-bottom: 8px; }
+
+/* ---------- Scanner ---------- */
+dialog.scan { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; background: #000; color: #fff; }
+dialog.scan[open] { display: flex; flex-direction: column; }
+.scan video { flex: 1; width: 100%; object-fit: cover; min-height: 0; }
+.reticle {
+  position: absolute; left: 12%; right: 12%; top: 30%; height: 22%;
+  border: 2px solid var(--accent); border-radius: 12px; pointer-events: none;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .35);
+}
+.scan-bar { background: #11151c; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
+.scan-bar label { color: #d8dbe2; display: flex; gap: 10px; align-items: center; font-size: .9rem; }
+.scan-bar input[type=checkbox] { width: 22px; min-height: 22px; height: 22px; }
+#scanStatus { font-size: .9rem; color: var(--accent); min-height: 1.3em; }
+#scanLog { list-style: none; margin: 6px 0 10px; padding: 0; max-height: 22vh; overflow-y: auto; font-size: .88rem; color: #c8ccd4; }
+#scanLog li { padding: 3px 0; }
+
+/* ---------- Kurzhinweis (Toast) ---------- */
+.toast {
+  position: fixed; left: 50%; z-index: 100;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 90px);
+  transform: translate(-50%, 20px);
+  background: var(--ink); color: var(--bg);
+  padding: 10px 16px; border-radius: 10px; font-size: .92rem;
+  max-width: 90vw; text-align: center;
+  opacity: 0; pointer-events: none; transition: .25s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
