@@ -78,6 +78,11 @@
       <button class="btn" id="newTagSetBtn">Anlegen</button>
     </div>
 
+    <h2>Cover</h2>
+    <p class="hint" style="margin-bottom:10px">Sucht für alle Bücher ohne funktionierendes Cover eines bei Google Books. Das dauert ein paar Minuten. Lass die App dabei geöffnet. Abbrechen ist jederzeit möglich, beim nächsten Start geht es dort weiter.</p>
+    <button class="btn" id="coverRunBtn">Fehlende Cover suchen</button>
+    <p class="hint" id="coverInfo"></p>
+
     <h2>Sicherung</h2>
     <p class="hint" style="margin-bottom:10px">Deine Bücher sind nur auf diesem Handy gespeichert. Exportiere ab und zu eine Sicherung, zum Beispiel in deinen Google Drive.</p>
     <div class="row">
@@ -145,7 +150,10 @@
   </div>
   <div class="sheet-body">
     <div class="edit-top">
-      <div id="editCoverWrap"></div>
+      <div class="cover-col">
+        <div id="editCoverWrap"></div>
+        <button type="button" class="btn ghost small" id="coverBtn">Cover suchen</button>
+      </div>
       <div class="grow">
         <label>Titel<input id="fTitle"></label>
         <label>Autor (mehrere mit Komma trennen)<input id="fAuthors"></label>
