@@ -1,6 +1,5 @@
 // Einstiegspunkt: verbindet alle Teile und startet die App.
 import { $, $$, on } from './ui.js';
-import { store } from './store.js';
 import { initLibrary, renderLibrary } from './views/library.js';
 import { initSeries, renderSeries } from './views/series.js';
 import { initRandom, renderRandom, resetPick } from './views/random.js';
@@ -17,8 +16,7 @@ const VIEWS = {
 let current = 'library';
 
 function renderAll() {
-  const n = store.db.books.length;
-  $('#count').textContent = current === 'library' ? `${n} ${n === 1 ? 'Buch' : 'Bücher'}` : '';
+  $('#count').textContent = ''; // die Bibliothek setzt ihren Zähler selbst
   VIEWS[current].render();
 }
 

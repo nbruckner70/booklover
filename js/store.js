@@ -8,6 +8,12 @@ export const QUICK_KEY = 'lesestapel-quick';
 
 export const store = { db: null };
 
+// Bewertung: 0 = keine, sonst 0,5 bis 5 in halben Schritten
+export function clampRating(r) {
+  const n = Math.round(parseFloat(r) * 2) / 2;
+  return n >= 0.5 && n <= 5 ? n : 0;
+}
+
 export function blankDb() {
   return { books: [], lists: [], tags: ['5 Star Read', 'English Book'] };
 }
@@ -15,7 +21,7 @@ export function blankDb() {
 export function newBook(data = {}) {
   return {
     id: uid(), isbn: '', title: '', authors: [], cover: '', year: '', pages: '', notes: '',
-    status: 'unread', lists: [], tags: [], series: null, added: Date.now(),
+    status: 'unread', rating: 0, lists: [], tags: [], series: null, added: Date.now(),
     ...data
   };
 }
@@ -35,6 +41,7 @@ export function normalize(d) {
     pages: b.pages || '',
     notes: b.notes || '',
     status: STATUS[b.status] ? b.status : 'unread',
+    rating: clampRating(b.rating),
     lists: b.lists || [],
     tags: b.tags || [],
     series: b.series && b.series.name ? { name: b.series.name, nr: b.series.nr ?? '' } : null,

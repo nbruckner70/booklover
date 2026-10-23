@@ -1,5 +1,6 @@
 // Ansicht "Einstellungen": Listen, Tags, Sicherung.
-import { $, toast, emit } from '../ui.js';
+import { $, toast, emit, sleep } from '../ui.js';
+import { findCovers, imageLoads } from '../api.js';
 import { store, save, addList, addTag, replaceDb, normalize, blankDb, storedSizeKb } from '../store.js';
 import { settingsItem } from '../templates.js';
 
@@ -73,7 +74,56 @@ async function importBackup(e) {
   e.target.value = '';
 }
 
+/* ---------- Fehlende Cover suchen ---------- */
+let coverRun = false;
+
+async function findMissingCovers() {
+  const btn = $('#coverRunBtn');
+  const info = $('#coverInfo');
+  if (coverRun) { coverRun = false; return; } // zweiter Tipp = stoppen
+  if (!navigator.onLine) { toast('Dafür brauchst du eine Internetverbindung.'); return; }
+
+  coverRun = true;
+  btn.textContent = 'Stoppen';
+  const books = store.db.books;
+  let checked = 0, found = 0, missing = 0;
+
+  for (const b of books) {
+    if (!coverRun) break;
+    checked++;
+    info.textContent = `Prüfe ${checked} von ${books.length} … ${found} neue Cover gefunden`;
+    if (b.cover && await imageLoads(b.cover)) continue; // hat schon ein funktionierendes Cover
+
+    let urls = [];
+    try {
+      urls = await findCovers(b);
+    } catch (e) {
+      if (e.message === 'rate') {
+        info.textContent = 'Google bremst gerade, kurze Pause …';
+        await sleep(8000);
+        try { urls = await findCovers(b); } catch (e2) { /* dieses Buch überspringen */ }
+      }
+    }
+
+    let ok = false;
+    for (const url of urls) {
+      if (await imageLoads(url)) { b.cover = url; ok = true; break; }
+    }
+    if (ok) { found++; save(); } else missing++;
+    await sleep(300); // Google nicht überlasten
+  }
+
+  const stopped = !coverRun;
+  coverRun = false;
+  btn.textContent = 'Fehlende Cover suchen';
+  info.textContent = (stopped ? `Gestoppt nach ${checked} Büchern: ` : 'Fertig: ') +
+    `${found} Cover ergänzt, für ${missing} Bücher keins gefunden.`;
+  emit('changed');
+}
+
 export function initSettings() {
+  $('#coverRunBtn').addEventListener('click', findMissingCovers);
+
   $('#v-settings').addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;

@@ -21,6 +21,8 @@ legend { font-size: .85rem; color: var(--muted); padding: 0; margin-bottom: 6px;
 details summary { color: var(--muted); font-size: .9rem; padding: 8px 0; cursor: pointer; }
 
 .edit-top { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 6px; }
+.cover-col { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 96px; flex: none; }
+.btn.small { font-size: .8rem; padding: 4px 2px; min-height: 36px; white-space: normal; text-align: center; }
 .nr { max-width: 90px; }
 .add-opts { display: grid; gap: 12px; padding-bottom: 8px; }
 
