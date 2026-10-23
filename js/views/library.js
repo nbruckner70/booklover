@@ -21,6 +21,7 @@ const SORTERS = {
   added: (a, b) => b.added - a.added,
   title: (a, b) => cmp(a.title, b.title),
   author: (a, b) => cmp(lastName(a), lastName(b)) || cmp(a.title, b.title),
+  rating: (a, b) => (b.rating || 0) - (a.rating || 0) || cmp(a.title, b.title),
   series: (a, b) => {
     const ka = seriesKey(a), kb = seriesKey(b);
     if (ka && !kb) return -1;
@@ -47,6 +48,13 @@ export function renderLibrary() {
   const list = store.db.books.filter(b => matches(b, query, label)).sort(SORTERS[$('#sortSel').value]);
 
   $('#bookList').innerHTML = list.map(bookRow).join('');
+
+  // Zähler oben: bei aktivem Filter oder Suche nur die angezeigten Bücher
+  const total = store.db.books.length;
+  const filtered = statusFilter !== 'all' || query || label;
+  $('#count').textContent = filtered
+    ? `${list.length} von ${total} Büchern`
+    : `${total} ${total === 1 ? 'Buch' : 'Bücher'}`;
 
   const empty = $('#emptyLib');
   if (!store.db.books.length) {
