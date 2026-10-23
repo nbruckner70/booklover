@@ -6,10 +6,11 @@
   --text: #1C2130;
   --muted: #5F6775;
   --line: #E1E3DE;
-  --accent: #4baaf8;
+  --accent: #E0A526;
   --on-accent: #2A1F05;
   --teal: #3E7C74;
   --danger: #B4483A;
+  --star-empty: #D3D6CF;
 
   --serif: "Noto Serif", "Source Serif 4", Georgia, "Times New Roman", serif;
   --sans: system-ui, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -26,10 +27,11 @@
     --text: #E7E8EA;
     --muted: #9AA3B2;
     --line: #2A3240;
-    --accent: #4baaf8;
+    --accent: #F0B93A;
     --on-accent: #241A02;
     --teal: #6FB3A8;
     --danger: #E07A6B;
+    --star-empty: #3A4354;
     color-scheme: dark;
   }
 }
