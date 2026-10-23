@@ -1,8 +1,9 @@
-// Ansicht "Einstellungen": Listen, Tags, Sicherung.
-import { $, toast, emit } from '../ui.js';
+// Ansicht "Einstellungen": Darstellung, Listen, Tags, Sicherung.
+import { $, $$, toast, emit } from '../ui.js';
 import { store, save, addList, addTag, replaceDb, normalize, blankDb, storedSizeKb } from '../store.js';
 import { settingsItem } from '../templates.js';
 import { exportCovers, importCovers, clearCovers, localCount } from '../covers.js';
+import { VERSION } from '../version.js';
 
 export function renderSettings() {
   const { books, lists, tags } = store.db;
@@ -15,6 +16,25 @@ export function renderSettings() {
   const photos = localCount();
   $('#storeInfo').textContent = `${books.length} Bücher, etwa ${storedSizeKb()} KB Daten` +
     (photos ? `, dazu ${photos} ${photos === 1 ? 'eigenes Coverfoto' : 'eigene Coverfotos'}.` : '.');
+}
+
+/* ---------- Darstellung ---------- */
+// Gleicher Schlüssel wie im Skript im <head> von index.html
+const THEME_KEY = 'booklover-theme';
+
+// '' = wie am Handy, 'light' oder 'dark' = fest gewählt
+const currentTheme = () => document.documentElement.dataset.theme || '';
+
+function renderTheme() {
+  $$('#themeSel button').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === currentTheme()));
+}
+
+function setTheme(theme) {
+  const root = document.documentElement;
+  if (theme) root.dataset.theme = theme;
+  else delete root.dataset.theme;
+  try { theme ? localStorage.setItem(THEME_KEY, theme) : localStorage.removeItem(THEME_KEY); } catch (e) {}
+  renderTheme();
 }
 
 function renameList(id) {
@@ -81,6 +101,12 @@ async function importBackup(e) {
 }
 
 export function initSettings() {
+  $('#appVersion').textContent = VERSION;
+  renderTheme();
+  $('#themeSel').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (btn) setTheme(btn.dataset.theme);
+  });
 
   $('#v-settings').addEventListener('click', e => {
     const btn = e.target.closest('button');

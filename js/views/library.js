@@ -58,7 +58,7 @@ export function renderLibrary() {
 
   const empty = $('#emptyLib');
   if (!store.db.books.length) {
-    empty.innerHTML = emptyState('Dein Regal ist noch leer', 'Tippe auf + und scanne die ISBN auf der Rückseite eines Buchs.');
+    empty.innerHTML = emptyState('Dein Regal ist noch leer', 'Tippe auf + und scanne die ISBN auf der Rückseite eines Buches.');
   } else if (!list.length) {
     empty.innerHTML = emptyState('Keine Treffer', 'Ändere die Suche oder die Filter.');
   }

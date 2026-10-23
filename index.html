@@ -7,6 +7,8 @@
   <title>Booklover</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon-192.png">
+  <!-- Gewählte Darstellung sofort setzen, damit beim Start nichts aufblitzt (siehe views/settings.js) -->
+  <script>try { const t = localStorage.getItem('booklover-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/views.css">
@@ -53,7 +55,6 @@
 
   <!-- Zufall -->
   <section class="view" id="v-random">
-    <div class="pile" id="pile" aria-hidden="true"></div>
     <div class="pick" id="pick" hidden></div>
     <label>Auswahl
       <select id="randFilter"></select>
@@ -64,6 +65,13 @@
 
   <!-- Einstellungen -->
   <section class="view set" id="v-settings">
+    <h2>Darstellung</h2>
+    <div class="seg" id="themeSel" role="group" aria-label="Darstellung">
+      <button data-theme="">Wie am Handy</button>
+      <button data-theme="light">Hell</button>
+      <button data-theme="dark">Dunkel</button>
+    </div>
+
     <h2>Listen</h2>
     <div id="setLists"></div>
     <div class="row" style="margin-top:8px">
@@ -89,6 +97,9 @@
 
     <h2>Alles löschen</h2>
     <button class="btn danger" id="wipeBtn">Alle Bücher und Einstellungen löschen</button>
+
+    <h2>Über Booklover</h2>
+    <p class="hint">Version <span id="appVersion"></span><br>Entwickelt von Nadine Bruckner</p>
   </section>
 </main>
 
