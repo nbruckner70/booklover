@@ -27,6 +27,14 @@ export function seriesLabel(b) {
   return b.series.nr !== '' ? `${b.series.name}, Band ${b.series.nr}` : b.series.name;
 }
 
+/* ---------- Sterne ---------- */
+export const ratingText = r => r ? `${String(r).replace('.', ',')} von 5 Sternen` : 'Nicht bewertet';
+
+// Anzeige mit halben Sternen: graue Sterne, darüber farbige, auf die passende Breite gekürzt
+export function stars(rating) {
+  return `<span class="stars" role="img" aria-label="${ratingText(rating)}"><span class="stars-base" aria-hidden="true">★★★★★</span><span class="stars-fill" aria-hidden="true" style="width:${rating / 5 * 100}%">★★★★★</span></span>`;
+}
+
 export const emptyState = (title, text) => `<div class="empty"><strong>${esc(title)}</strong>${esc(text)}</div>`;
 
 /* ---------- Bibliothek ---------- */
@@ -42,6 +50,7 @@ export function bookRow(b) {
       <div class="meta">
         <div class="t">${esc(b.title)}</div>
         <div class="a">${esc(b.authors.join(', ') || 'Autor unbekannt')}</div>
+        ${b.rating ? `<div class="rating-line">${stars(b.rating)}</div>` : ''}
         ${badges.length ? `<div class="badges">${badges.join('')}</div>` : ''}
       </div>
     </li>`;
