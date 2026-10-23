@@ -92,21 +92,28 @@ export function seriesBlock(vols, next) {
 }
 
 /* ---------- Zufall ---------- */
-export function spine(b, i) {
-  const width = 62 + (hue(b.id) % 30);
-  const offset = (hue(b.title) % 24) - 12;
-  return `<div class="spine" data-i="${i}" style="width:${width}%;background:${spineColor(b)};transform:translateX(${offset}px)">${esc(b.title)}</div>`;
+const gift = () => `<div class="gift" aria-hidden="true"><span class="paper l"></span><span class="paper r"></span><span class="bow"><i class="tail l"></i><i class="tail r"></i><b class="knot"></b></span></div>`;
+
+// Vor dem Ziehen: nur das verpackte Geschenk
+export function giftCard() {
+  return `
+    <p class="label">Dein nächstes Buch wartet schon</p>
+    <div class="unwrap">${gift()}</div>`;
 }
 
+// Nach dem Ziehen: das Geschenk liegt über dem Cover und wird ausgepackt
 export function pickCard(b, why) {
   return `
-    ${cover(b, 'xl')}
-    <h2>${esc(b.title)}</h2>
-    <div class="a">${esc(b.authors.join(', '))}</div>
-    ${why ? `<p class="why">${esc(why)}</p>` : ''}
-    <div class="row">
-      <button class="btn primary" data-action="start">Jetzt lesen</button>
-      <button class="btn" data-action="details">Details</button>
+    <p class="label">Heute dran</p>
+    <div class="unwrap open">${cover(b, 'xl')}${gift()}</div>
+    <div class="info">
+      <h2>${esc(b.title)}</h2>
+      <div class="a">${esc(b.authors.join(', '))}</div>
+      ${why ? `<p class="why">${esc(why)}</p>` : ''}
+      <div class="row">
+        <button class="btn primary" data-action="start">Jetzt lesen</button>
+        <button class="btn" data-action="details">Details</button>
+      </div>
     </div>`;
 }
 

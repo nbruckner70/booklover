@@ -7,8 +7,6 @@ const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ESC[c]);
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-export const sleep = ms => new Promise(r => setTimeout(r, ms));
-export const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let toastTimer;
 export function toast(msg) {

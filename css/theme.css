@@ -1,37 +1,25 @@
-/* Farben, Schriften und Maße – hier lässt sich das Aussehen zentral ändern */
 :root {
-  --bg: #F5F6F3;
-  --surface: #FFFFFF;
-  --ink: #1F2A44;
-  --text: #1C2130;
-  --muted: #5F6775;
-  --line: #E1E3DE;
-  --accent: #268ce0;
-  --on-accent: #2A1F05;
-  --teal: #3E7C74;
-  --danger: #B4483A;
-  --star-empty: #D3D6CF;
+  color-scheme: light dark;
+
+  --bg:          light-dark(#F5F6F3, #12161D);
+  --surface:     light-dark(#FFFFFF, #1B212C);
+  --ink:         light-dark(#1F2A44, #C9D3EA);
+  --text:        light-dark(#1C2130, #E7E8EA);
+  --muted:       light-dark(#5F6775, #9AA3B2);
+  --line:        light-dark(#E1E3DE, #2A3240);
+  --accent:      light-dark(#57acf1, #57acf1);
+  --on-accent:   light-dark(#2A1F05, #241A02);
+  --teal:        light-dark(#3E7C74, #6FB3A8);
+  --danger:      light-dark(#B4483A, #E07A6B);
+  --star-empty:  light-dark(#D3D6CF, #3A4354);
+  --gift-paper:  light-dark(#1F2A44, #2B3A5E);
+  --gift-ribbon: light-dark(#F3EBDD, #F3EBDD);
 
   --serif: "Noto Serif", "Source Serif 4", Georgia, "Times New Roman", serif;
   --sans: system-ui, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
 
   --nav-h: 64px;
-  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #12161D;
-    --surface: #1B212C;
-    --ink: #C9D3EA;
-    --text: #E7E8EA;
-    --muted: #9AA3B2;
-    --line: #2A3240;
-    --accent: #268ce0;
-    --on-accent: #241A02;
-    --teal: #6FB3A8;
-    --danger: #E07A6B;
-    --star-empty: #3A4354;
-    color-scheme: dark;
-  }
-}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }

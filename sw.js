@@ -1,7 +1,5 @@
-// Service Worker: speichert die App am Handy, damit sie offline läuft.
-// Bei jeder neuen Version APP_CACHE hochzählen.
-const APP_CACHE = 'booklover-app-v6';
-const COVER_CACHE = 'lesestapel-covers'; // Name beibehalten, damit geladene Cover erhalten bleiben
+const APP_CACHE = 'booklover-app-v7';
+const COVER_CACHE = 'lesestapel-covers';
 
 const ASSETS = [
   './',
@@ -14,6 +12,7 @@ const ASSETS = [
   './css/views.css',
   './css/dialogs.css',
   './js/main.js',
+  './js/version.js',
   './js/ui.js',
   './js/logic.js',
   './js/store.js',
