@@ -29,6 +29,7 @@ export function newBook(data = {}) {
 // Bringt Daten (auch aus alten Versionen oder Sicherungen) in die aktuelle Form.
 export function normalize(d) {
   d = Object.assign(blankDb(), d || {});
+  delete d.localCovers; // Fotos aus Sicherungen gehören in den Foto-Speicher, nicht hierher
   d.lists = (d.lists || []).filter(l => l && l.id && l.name);
   d.tags = (d.tags || []).filter(Boolean);
   d.books = (d.books || []).map(b => newBook({

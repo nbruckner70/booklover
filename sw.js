@@ -1,5 +1,7 @@
-const APP_CACHE = 'booklover-app-v3';
-const COVER_CACHE = 'lesestapel-covers';
+// Service Worker: speichert die App am Handy, damit sie offline läuft.
+// Bei jeder neuen Version APP_CACHE hochzählen.
+const APP_CACHE = 'booklover-app-v6';
+const COVER_CACHE = 'lesestapel-covers'; // Name beibehalten, damit geladene Cover erhalten bleiben
 
 const ASSETS = [
   './',
@@ -16,6 +18,7 @@ const ASSETS = [
   './js/logic.js',
   './js/store.js',
   './js/api.js',
+  './js/covers.js',
   './js/templates.js',
   './js/views/library.js',
   './js/views/series.js',
@@ -43,6 +46,7 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
+  // Eigene Dateien: zuerst aus dem Netz (damit Updates ankommen), offline aus dem Speicher
   if (url.origin === location.origin) {
     e.respondWith(
       fetch(e.request)
@@ -56,6 +60,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
+  // Cover-Bilder: einmal laden, danach auch offline verfügbar
   if (e.request.destination === 'image') {
     e.respondWith(
       caches.open(COVER_CACHE).then(async c => {

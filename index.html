@@ -78,11 +78,6 @@
       <button class="btn" id="newTagSetBtn">Anlegen</button>
     </div>
 
-    <h2>Cover</h2>
-    <p class="hint" style="margin-bottom:10px">Sucht für alle Bücher ohne funktionierendes Cover eines bei Google Books. Das dauert ein paar Minuten. Lass die App dabei geöffnet. Abbrechen ist jederzeit möglich, beim nächsten Start geht es dort weiter.</p>
-    <button class="btn" id="coverRunBtn">Fehlende Cover suchen</button>
-    <p class="hint" id="coverInfo"></p>
-
     <h2>Sicherung</h2>
     <p class="hint" style="margin-bottom:10px">Deine Bücher sind nur auf diesem Handy gespeichert. Exportiere ab und zu eine Sicherung, zum Beispiel in deinen Google Drive.</p>
     <div class="row">
@@ -152,7 +147,9 @@
     <div class="edit-top">
       <div class="cover-col">
         <div id="editCoverWrap"></div>
-        <button type="button" class="btn ghost small" id="coverBtn">Cover suchen</button>
+        <button type="button" class="btn ghost small" id="coverBtn">Eigenes Foto</button>
+        <button type="button" class="btn ghost small" id="coverRemove">Entfernen</button>
+        <input type="file" id="coverFile" accept="image/*" hidden>
       </div>
       <div class="grow">
         <label>Titel<input id="fTitle"></label>
@@ -215,7 +212,7 @@
         <label class="grow">Erscheinungsjahr<input id="fYear" inputmode="numeric"></label>
         <label class="grow">Seiten<input id="fPages" inputmode="numeric"></label>
       </div>
-      <label>Cover-Link<input id="fCover" inputmode="url"></label>
+      <label>Cover-Link<input id="fCover" inputmode="url" placeholder="Leer lassen, wenn ein eigenes Foto verwendet wird"></label>
       <label>Notizen<textarea id="fNotes"></textarea></label>
     </details>
   </div>

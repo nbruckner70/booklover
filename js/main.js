@@ -6,6 +6,7 @@ import { initRandom, renderRandom, resetPick } from './views/random.js';
 import { initSettings, renderSettings } from './views/settings.js';
 import { initEdit } from './dialogs/edit.js';
 import { initAdd } from './dialogs/add.js';
+import { loadAll as loadCovers } from './covers.js';
 
 const VIEWS = {
   library:  { title: 'Bibliothek',    render: renderLibrary,  fab: true },
@@ -60,3 +61,4 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persist().
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 renderAll();
+loadCovers().then(renderAll); // eigene Fotos nachladen und anzeigen
