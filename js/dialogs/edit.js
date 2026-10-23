@@ -2,11 +2,11 @@
 import { $, $$, esc, toast, emit } from '../ui.js';
 import { store, save, addList, addTag } from '../store.js';
 import { cleanIsbn, seriesKey, seriesNr, booksOfSeries } from '../logic.js';
-import { cover, chip } from '../templates.js';
+import { cover, chip, ratingText } from '../templates.js';
 
 let editing = null;   // das Buch-Objekt, das gerade bearbeitet wird
 let isNew = false;
-let selLists, selTags, selStatus;
+let selLists, selTags, selStatus, selRating;
 
 const field = id => $('#' + id);
 
@@ -17,6 +17,12 @@ function refreshSeriesNames() {
 
 function renderStatus() {
   $$('#fStatus button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === selStatus));
+}
+
+function renderRating() {
+  $('#fRatingFill').style.width = `${selRating / 5 * 100}%`;
+  $('#fRatingText').textContent = ratingText(selRating);
+  $('#fRatingClear').hidden = !selRating;
 }
 
 function renderChips() {
@@ -63,11 +69,13 @@ export function openEdit(id, fresh) {
   selLists = new Set(b.lists);
   selTags = new Set(b.tags);
   selStatus = b.status;
+  selRating = b.rating || 0;
   $('#delBtn').hidden = isNew;
 
   refreshSeriesNames();
   renderChips();
   renderStatus();
+  renderRating();
   updateSeriesHint();
   $('#dlgEdit').showModal();
   $('#dlgEdit .sheet-body').scrollTop = 0;
@@ -89,6 +97,7 @@ function saveBook() {
     cover: field('fCover').value.trim(),
     notes: field('fNotes').value,
     status: selStatus,
+    rating: selRating,
     lists: [...selLists],
     tags: [...selTags]
   });
@@ -114,6 +123,19 @@ function toggleIn(set, value, chipEl) {
 }
 
 export function initEdit() {
+  // 10 unsichtbare Tippflächen über den Sternen: linke Hälfte = halber Stern, rechte = ganzer
+  $('#fRatingHits').innerHTML = Array.from({ length: 10 }, (_, i) => {
+    const v = (i + 1) / 2;
+    return `<button type="button" data-v="${v}" aria-label="${ratingText(v)}"></button>`;
+  }).join('');
+  $('#fRatingHits').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const v = parseFloat(b.dataset.v);
+    selRating = v === selRating ? 0 : v; // gleichen Wert nochmal tippen = entfernen
+    renderRating();
+  });
+  $('#fRatingClear').addEventListener('click', () => { selRating = 0; renderRating(); });
   $('#fStatus').addEventListener('click', e => {
     const b = e.target.closest('button');
     if (b) { selStatus = b.dataset.s; renderStatus(); }
