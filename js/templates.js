@@ -3,6 +3,7 @@
 import { esc } from './ui.js';
 import { STATUS, seriesKey } from './logic.js';
 import { listName } from './store.js';
+import { LOCAL, localUrl } from './covers.js';
 
 /* ---------- Farben und Cover ---------- */
 export function hue(str) {
@@ -16,8 +17,9 @@ const initials = t => String(t).split(/\s+/).filter(Boolean).slice(0, 2).map(w =
 // Cover-Bild; fehlt es oder lädt es nicht, erscheinen die Initialen auf farbigem Grund.
 export function cover(b, size = '') {
   const style = `background:${spineColor(b)}`;
-  if (b.cover) {
-    return `<div class="cover has-img ${size}" style="${style}"><img src="${esc(b.cover)}" alt="" loading="lazy" data-fallback="${esc(initials(b.title))}"></div>`;
+  const src = b.cover === LOCAL ? localUrl(b.id) : b.cover;
+  if (src) {
+    return `<div class="cover has-img ${size}" style="${style}"><img src="${esc(src)}" alt="" loading="lazy" data-fallback="${esc(initials(b.title))}"></div>`;
   }
   return `<div class="cover ${size}" style="${style}">${esc(initials(b.title))}</div>`;
 }

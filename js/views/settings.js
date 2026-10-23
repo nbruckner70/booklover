@@ -1,8 +1,8 @@
 // Ansicht "Einstellungen": Listen, Tags, Sicherung.
-import { $, toast, emit, sleep } from '../ui.js';
-import { findCovers, imageLoads } from '../api.js';
+import { $, toast, emit } from '../ui.js';
 import { store, save, addList, addTag, replaceDb, normalize, blankDb, storedSizeKb } from '../store.js';
 import { settingsItem } from '../templates.js';
+import { exportCovers, importCovers, clearCovers, localCount } from '../covers.js';
 
 export function renderSettings() {
   const { books, lists, tags } = store.db;
@@ -12,7 +12,9 @@ export function renderSettings() {
   $('#setTags').innerHTML = tags.length
     ? tags.map(t => settingsItem(t, books.filter(b => b.tags.includes(t)).length, 'tag', t)).join('')
     : '<p class="hint">Noch keine Tags.</p>';
-  $('#storeInfo').textContent = `${books.length} Bücher, etwa ${storedSizeKb()} KB Daten.`;
+  const photos = localCount();
+  $('#storeInfo').textContent = `${books.length} Bücher, etwa ${storedSizeKb()} KB Daten` +
+    (photos ? `, dazu ${photos} ${photos === 1 ? 'eigenes Coverfoto' : 'eigene Coverfotos'}.` : '.');
 }
 
 function renameList(id) {
@@ -46,8 +48,9 @@ function deleteTag(old) {
   save(); emit('changed');
 }
 
-function exportBackup() {
-  const blob = new Blob([JSON.stringify(store.db, null, 1)], { type: 'application/json' });
+async function exportBackup() {
+  const data = { ...store.db, localCovers: await exportCovers() };
+  const blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `booklover-sicherung-${new Date().toISOString().slice(0, 10)}.json`;
@@ -62,9 +65,12 @@ async function importBackup(e) {
   const file = e.target.files[0];
   if (!file) return;
   try {
-    const data = normalize(JSON.parse(await file.text()));
+    const raw = JSON.parse(await file.text());
+    const photos = raw.localCovers || {};
+    const data = normalize(raw);
     if (confirm(`Sicherung mit ${data.books.length} Büchern importieren? Die aktuellen Daten werden dabei ersetzt.`)) {
       replaceDb(data);
+      await importCovers(photos);
       toast('Sicherung importiert');
       emit('changed');
     }
@@ -74,55 +80,7 @@ async function importBackup(e) {
   e.target.value = '';
 }
 
-/* ---------- Fehlende Cover suchen ---------- */
-let coverRun = false;
-
-async function findMissingCovers() {
-  const btn = $('#coverRunBtn');
-  const info = $('#coverInfo');
-  if (coverRun) { coverRun = false; return; } // zweiter Tipp = stoppen
-  if (!navigator.onLine) { toast('Dafür brauchst du eine Internetverbindung.'); return; }
-
-  coverRun = true;
-  btn.textContent = 'Stoppen';
-  const books = store.db.books;
-  let checked = 0, found = 0, missing = 0;
-
-  for (const b of books) {
-    if (!coverRun) break;
-    checked++;
-    info.textContent = `Prüfe ${checked} von ${books.length} … ${found} neue Cover gefunden`;
-    if (b.cover && await imageLoads(b.cover)) continue; // hat schon ein funktionierendes Cover
-
-    let urls = [];
-    try {
-      urls = await findCovers(b);
-    } catch (e) {
-      if (e.message === 'rate') {
-        info.textContent = 'Google bremst gerade, kurze Pause …';
-        await sleep(8000);
-        try { urls = await findCovers(b); } catch (e2) { /* dieses Buch überspringen */ }
-      }
-    }
-
-    let ok = false;
-    for (const url of urls) {
-      if (await imageLoads(url)) { b.cover = url; ok = true; break; }
-    }
-    if (ok) { found++; save(); } else missing++;
-    await sleep(300); // Google nicht überlasten
-  }
-
-  const stopped = !coverRun;
-  coverRun = false;
-  btn.textContent = 'Fehlende Cover suchen';
-  info.textContent = (stopped ? `Gestoppt nach ${checked} Büchern: ` : 'Fertig: ') +
-    `${found} Cover ergänzt, für ${missing} Bücher keins gefunden.`;
-  emit('changed');
-}
-
 export function initSettings() {
-  $('#coverRunBtn').addEventListener('click', findMissingCovers);
 
   $('#v-settings').addEventListener('click', e => {
     const btn = e.target.closest('button');
@@ -149,6 +107,7 @@ export function initSettings() {
     if (confirm('Wirklich alle Bücher, Listen und Tags löschen?') &&
         confirm('Sicher? Das lässt sich ohne Sicherung nicht rückgängig machen.')) {
       replaceDb(blankDb());
+      clearCovers();
       toast('Alle Daten gelöscht');
       emit('changed');
     }

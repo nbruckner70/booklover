@@ -10,7 +10,11 @@ dialog.sheet {
 dialog.sheet[open] { display: flex; }
 .sheet-head { display: flex; align-items: center; padding: 14px 12px 6px 18px; }
 .sheet-head h2 { flex: 1; margin: 0; font: 600 1.25rem var(--serif); color: var(--ink); }
-.sheet-body { padding: 6px 18px 12px; overflow-y: auto; }
+.sheet-body { padding: 6px 18px 12px; overflow-y: auto; overscroll-behavior: contain; }
+
+/* Solange ein Dialog offen ist, bleibt die Seite dahinter stehen */
+body:has(dialog[open]) { overflow: hidden; }
+dialog { overscroll-behavior: contain; }
 .sheet-foot {
   display: flex; gap: 8px; border-top: 1px solid var(--line);
   padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
