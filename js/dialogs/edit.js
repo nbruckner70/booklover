@@ -3,10 +3,12 @@ import { $, $$, esc, toast, emit } from '../ui.js';
 import { store, save, addList, addTag } from '../store.js';
 import { cleanIsbn, seriesKey, seriesNr, booksOfSeries } from '../logic.js';
 import { cover, chip, ratingText } from '../templates.js';
+import { findCovers } from '../api.js';
 
 let editing = null;   // das Buch-Objekt, das gerade bearbeitet wird
 let isNew = false;
 let selLists, selTags, selStatus, selRating;
+let coverCands = [], coverIdx = -1; // gefundene Cover für den Button "Anderes Cover"
 
 const field = id => $('#' + id);
 
@@ -71,6 +73,8 @@ export function openEdit(id, fresh) {
   selStatus = b.status;
   selRating = b.rating || 0;
   $('#delBtn').hidden = isNew;
+  coverCands = []; coverIdx = -1;
+  $('#coverBtn').textContent = b.cover ? 'Anderes Cover' : 'Cover suchen';
 
   refreshSeriesNames();
   renderChips();
@@ -79,6 +83,31 @@ export function openEdit(id, fresh) {
   updateSeriesHint();
   $('#dlgEdit').showModal();
   $('#dlgEdit .sheet-body').scrollTop = 0;
+}
+
+// Jeder Tipp zeigt das nächste gefundene Cover; Speichern übernimmt es.
+async function nextCover() {
+  const btn = $('#coverBtn');
+  if (!coverCands.length) {
+    btn.disabled = true;
+    btn.textContent = 'Suche …';
+    const probe = {
+      title: field('fTitle').value,
+      authors: field('fAuthors').value.split(',').map(s => s.trim()),
+      isbn: field('fIsbn').value
+    };
+    try { coverCands = await findCovers(probe); } catch (e) { coverCands = []; }
+    btn.disabled = false;
+  }
+  if (!coverCands.length) {
+    btn.textContent = 'Cover suchen';
+    toast(navigator.onLine ? 'Kein Cover gefunden.' : 'Dafür brauchst du eine Internetverbindung.');
+    return;
+  }
+  coverIdx = (coverIdx + 1) % coverCands.length;
+  field('fCover').value = coverCands[coverIdx];
+  $('#editCoverWrap').innerHTML = cover({ ...editing, title: field('fTitle').value, cover: coverCands[coverIdx] }, 'lg');
+  btn.textContent = coverCands.length > 1 ? `Anderes Cover (${coverIdx + 1}/${coverCands.length})` : 'Cover suchen';
 }
 
 function saveBook() {
@@ -136,6 +165,7 @@ export function initEdit() {
     renderRating();
   });
   $('#fRatingClear').addEventListener('click', () => { selRating = 0; renderRating(); });
+  $('#coverBtn').addEventListener('click', nextCover);
   $('#fStatus').addEventListener('click', e => {
     const b = e.target.closest('button');
     if (b) { selStatus = b.dataset.s; renderStatus(); }
