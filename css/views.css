@@ -1,8 +1,12 @@
 /* ---------- Bibliothek ---------- */
 .toolbar { display: grid; gap: 8px; margin-bottom: 12px; }
-.books { list-style: none; margin: 0; padding: 0; }
-.book { display: flex; gap: 14px; padding: 12px 4px; border-bottom: 1px solid var(--line); align-items: flex-start; }
-.book:active { background: var(--surface); }
+.books {
+  list-style: none; margin: 0; padding: 4px 0 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 20px 14px;
+}
+.book { min-width: 0; cursor: pointer; }
+.book:active .cover { opacity: .8; }
+.book .t { margin-top: 8px; font-size: .9rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .cover {
   width: 48px; height: 72px; flex: none; overflow: hidden;
@@ -13,21 +17,18 @@
 }
 .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover.has-img { padding: 0; }
+/* Im Raster: so breit wie die Spalte, im Buchformat 2:3 */
+.cover.fill {
+  width: 100%; height: auto; aspect-ratio: 2 / 3; font-size: 1.3rem; padding-bottom: 14px;
+  box-shadow: inset 4px 0 0 rgba(0, 0, 0, .18), 0 3px 10px rgba(0, 0, 0, .2);
+}
+.cover.has-img.fill { padding: 0; }
 .cover.lg { width: 84px; height: 126px; font-size: 1.1rem; }
 .cover.xl {
   width: 140px; height: 210px; font-size: 1.6rem; padding-bottom: 16px;
   box-shadow: inset 5px 0 0 rgba(0, 0, 0, .18), 0 10px 30px rgba(0, 0, 0, .25);
 }
 .cover.has-img.xl { padding: 0; }
-
-.meta { min-width: 0; flex: 1; }
-.meta .t { font: 600 1rem/1.3 var(--sans); color: var(--text); overflow-wrap: anywhere; }
-.meta .a { color: var(--muted); font-size: .88rem; margin-top: 2px; }
-.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.badge { font-size: .75rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-.badge.series { border-color: var(--teal); color: var(--teal); }
-.badge.s-reading { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.badge.s-read { background: var(--teal); border-color: var(--teal); color: var(--bg); }
 
 /* ---------- Reihen ---------- */
 .series-block { margin: 0 0 22px; }
