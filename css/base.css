@@ -97,16 +97,14 @@ label input, label select, label textarea { margin-top: 4px; color: var(--text);
 .chip { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 6px 12px; font-size: .88rem; min-height: 36px; }
 .chip[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: var(--bg); }
 
-/* Sterne (Anzeige und Eingabe) */
-.stars, .rate-input { position: relative; display: inline-block; line-height: 1; white-space: nowrap; color: var(--star-empty); }
-.stars { font-size: .95rem; }
+/* Sterne (Eingabe) */
+.rate-input { position: relative; display: inline-block; line-height: 1; white-space: nowrap; color: var(--star-empty); }
 .stars-fill { position: absolute; left: 0; top: 0; overflow: hidden; color: var(--accent); }
 .rate-input { font-size: 2.1rem; }
 .rate-hits { position: absolute; inset: -6px 0; display: grid; grid-template-columns: repeat(10, 1fr); }
 .rate-hits button { background: none; border: 0; padding: 0; margin: 0; }
 .rate-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .rate-row .hint { margin: 0; }
-.rating-line { margin-top: 3px; }
 
 /* Leere Zustände */
 .empty { text-align: center; color: var(--muted); padding: 48px 16px; }

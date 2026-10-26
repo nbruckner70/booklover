@@ -2,7 +2,7 @@
 import { $, $$ } from '../ui.js';
 import { store } from '../store.js';
 import { seriesKey, seriesNr } from '../logic.js';
-import { bookRow, emptyState, labelOptions } from '../templates.js';
+import { bookTile, emptyState, labelOptions } from '../templates.js';
 import { openEdit } from '../dialogs/edit.js';
 
 let statusFilter = 'all';
@@ -47,7 +47,7 @@ export function renderLibrary() {
   const label = $('#labelFilter').value;
   const list = store.db.books.filter(b => matches(b, query, label)).sort(SORTERS[$('#sortSel').value]);
 
-  $('#bookList').innerHTML = list.map(bookRow).join('');
+  $('#bookList').innerHTML = list.map(bookTile).join('');
 
   // Zähler oben: bei aktivem Filter oder Suche nur die angezeigten Bücher
   const total = store.db.books.length;
