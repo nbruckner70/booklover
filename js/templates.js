@@ -2,7 +2,6 @@
 // Die festen Teile der Seite (Navigation, Dialoge) stehen in index.html.
 import { esc } from './ui.js';
 import { STATUS, seriesKey, toIsbn13 } from './logic.js';
-import { listName } from './store.js';
 import { LOCAL, NO_COVER, localUrl } from './covers.js';
 
 /* ---------- Farben und Cover ---------- */
@@ -12,7 +11,9 @@ export function hue(str) {
   return h;
 }
 export const spineColor = b => `hsl(${hue(b.title + (b.authors[0] || ''))} 32% 40%)`;
-const initials = t => String(t).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+// Anfangsbuchstaben der ersten zwei Wörter; Satzzeichen wie „–“ oder „»“ zählen nicht
+const initials = t => String(t).split(/\s+/).map(w => w.replace(/^[^\p{L}\d]+/u, '')).filter(Boolean)
+  .slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
 // Cover-Adresse zur ISBN bei Open Library, deren Cover frei verwendet werden dürfen.
 // Die Nationalbibliothek hat zwar Cover, lässt sie aber nicht in fremde Seiten einbinden.
@@ -39,37 +40,18 @@ export function cover(b, size = '') {
   return `<div class="cover ${size}" style="${style}">${esc(initials(b.title))}</div>`;
 }
 
-export function seriesLabel(b) {
-  if (!seriesKey(b)) return '';
-  return b.series.nr !== '' ? `${b.series.name}, Band ${b.series.nr}` : b.series.name;
-}
-
 /* ---------- Sterne ---------- */
 export const ratingText = r => r ? `${String(r).replace('.', ',')} von 5 Sternen` : 'Nicht bewertet';
-
-// Anzeige mit halben Sternen: graue Sterne, darüber farbige, auf die passende Breite gekürzt
-export function stars(rating) {
-  return `<span class="stars" role="img" aria-label="${ratingText(rating)}"><span class="stars-base" aria-hidden="true">★★★★★</span><span class="stars-fill" aria-hidden="true" style="width:${rating / 5 * 100}%">★★★★★</span></span>`;
-}
 
 export const emptyState = (title, text) => `<div class="empty"><strong>${esc(title)}</strong>${esc(text)}</div>`;
 
 /* ---------- Bibliothek ---------- */
-export function bookRow(b) {
-  const badges = [];
-  if (seriesKey(b)) badges.push(`<span class="badge series">${esc(seriesLabel(b))}</span>`);
-  if (b.status !== 'unread') badges.push(`<span class="badge s-${b.status}">${STATUS[b.status]}</span>`);
-  b.lists.forEach(id => { const n = listName(id); if (n) badges.push(`<span class="badge">${esc(n)}</span>`); });
-  b.tags.forEach(t => badges.push(`<span class="badge">${esc(t)}</span>`));
+// Kachel im Raster: Cover und darunter der Titel in einer Zeile
+export function bookTile(b) {
   return `
     <li class="book" data-id="${b.id}">
-      ${cover(b)}
-      <div class="meta">
-        <div class="t">${esc(b.title)}</div>
-        <div class="a">${esc(b.authors.join(', ') || 'Autor unbekannt')}</div>
-        ${b.rating ? `<div class="rating-line">${stars(b.rating)}</div>` : ''}
-        ${badges.length ? `<div class="badges">${badges.join('')}</div>` : ''}
-      </div>
+      ${cover(b, 'fill')}
+      <div class="t">${esc(b.title)}</div>
     </li>`;
 }
 
