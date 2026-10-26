@@ -19,6 +19,41 @@ export function toIsbn13(s) {
   return s;
 }
 
+/* ---------- Titel ---------- */
+// Buchdienste (Goodreads, Amazon, Google) hängen gern Reihe, Ausgabe oder Werbung an den Titel, z. B.
+// „Dornen und Rosen (Das Reich der sieben Höfe, #1)“ oder „The Deal - Roman | Demnächst als Serie …“.
+// Klammern mit solchen Angaben fliegen raus, ebenso wie Klammern, die nur den Titel wiederholen.
+const EXTRA_IN_BRACKETS = /#\s*\d|edition|ausgabe|reihe|serie|saga|trilogie|collection|book\s*\d|band\s*\d|teil\s*\d|\d$/i;
+const GENRE_SUFFIX = /(?:\s*:|\s+[-–])\s+(?:[\p{L}-]+\s+){0,2}[\p{L}-]*(?:roman|thriller|krimi)$/iu;
+const EDITION_SUFFIX = /\s*[:\-–]?\s*(?:(?:special|deluxe|limited|german)\s+)?[\p{L}-]*(?:edition|ausgabe)$/iu;
+
+// Liefert den bereinigten Titel und die Reihe, falls sie im Titel stand („(Reihe, #2)“).
+export function cleanTitle(raw) {
+  const original = String(raw || '').replace(/\s+/g, ' ').trim();
+  let t = original.split(' | ')[0];
+  let series = null;
+
+  let before;
+  do {
+    before = t;
+    t = t.replace(/\s*\(([^()]*)\)/g, (all, inner) => {
+      const hash = inner.match(/^(.+?)[\s,]*#\s*(\d+(?:[.,]\d+)?)$/);
+      if (hash) { series ||= { name: hash[1].trim(), nr: hash[2].replace(',', '.') }; return ''; }
+      const rest = t.replace(all, '');
+      return EXTRA_IN_BRACKETS.test(inner) || rest.toLowerCase().includes(inner.trim().toLowerCase()) ? '' : all;
+    });
+  } while (t !== before);
+
+  t = t.replace(GENRE_SUFFIX, '').replace(EDITION_SUFFIX, '');
+
+  // Lange Werbe-Untertitel nach dem letzten Doppelpunkt („Powerless: TikTok made me buy it! …“)
+  const colon = t.lastIndexOf(': ');
+  if (colon > 0 && t.slice(colon + 2).split(' ').length >= 10) t = t.slice(0, colon);
+
+  t = t.replace(/[\s:\-–|]+$/, '').trim();
+  return { title: t || original, series };
+}
+
 /* ---------- Reihen ---------- */
 // Reihen werden über den Namen erkannt, Groß-/Kleinschreibung und Leerzeichen am Rand egal.
 export function seriesKey(book) {
