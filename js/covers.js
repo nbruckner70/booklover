@@ -2,6 +2,8 @@
 // Ein Buch mit eigenem Foto hat als cover den Wert LOCAL, das Bild selbst liegt hier unter der Buch-ID.
 
 export const LOCAL = 'local';
+// Cover bewusst entfernt: dann auch nicht automatisch über die ISBN suchen
+export const NO_COVER = 'none';
 
 const DB_NAME = 'booklover-covers';
 const STORE = 'covers';

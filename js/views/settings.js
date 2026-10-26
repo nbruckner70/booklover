@@ -3,6 +3,7 @@ import { $, $$, toast, emit } from '../ui.js';
 import { store, save, addList, addTag, replaceDb, normalize, blankDb, storedSizeKb } from '../store.js';
 import { settingsItem } from '../templates.js';
 import { exportCovers, importCovers, clearCovers, localCount } from '../covers.js';
+import { cleanTitle, seriesKey } from '../logic.js';
 import { VERSION } from '../version.js';
 
 export function renderSettings() {
@@ -68,6 +69,28 @@ function deleteTag(old) {
   save(); emit('changed');
 }
 
+// Kürzt Titel aus Importen und übernimmt die Reihe aus dem Titel, wenn noch keine eingetragen ist.
+function tidyTitles() {
+  const changes = store.db.books
+    .map(b => {
+      const clean = cleanTitle(b.title);
+      return { b, title: clean.title, series: seriesKey(b) ? null : clean.series };
+    })
+    .filter(c => c.title !== c.b.title || c.series);
+  if (!changes.length) { toast('Alle Titel sind schon aufgeräumt.'); return; }
+  const ex = changes.find(c => c.title !== c.b.title) || changes[0];
+  const n = changes.length;
+  const what = `${n} ${n === 1 ? 'Buch' : 'Bücher'}`;
+  if (!confirm(`${what} aufräumen?\n\nZum Beispiel wird aus „${ex.b.title}“ der Titel „${ex.title}“.`)) return;
+  changes.forEach(c => {
+    c.b.title = c.title;
+    if (c.series) c.b.series = c.series;
+  });
+  save();
+  toast(`${what} aufgeräumt`);
+  emit('changed');
+}
+
 async function exportBackup() {
   const data = { ...store.db, localCovers: await exportCovers() };
   const blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
@@ -125,6 +148,7 @@ export function initSettings() {
     if (addTag($('#newTagSet').value)) { $('#newTagSet').value = ''; renderSettings(); }
   });
 
+  $('#tidyBtn').addEventListener('click', tidyTitles);
   $('#exportBtn').addEventListener('click', exportBackup);
   $('#importBtn').addEventListener('click', () => $('#importFile').click());
   $('#importFile').addEventListener('change', importBackup);

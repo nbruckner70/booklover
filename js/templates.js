@@ -1,9 +1,9 @@
 // Alle HTML-Bausteine, die zur Laufzeit erzeugt werden.
 // Die festen Teile der Seite (Navigation, Dialoge) stehen in index.html.
 import { esc } from './ui.js';
-import { STATUS, seriesKey } from './logic.js';
+import { STATUS, seriesKey, toIsbn13 } from './logic.js';
 import { listName } from './store.js';
-import { LOCAL, localUrl } from './covers.js';
+import { LOCAL, NO_COVER, localUrl } from './covers.js';
 
 /* ---------- Farben und Cover ---------- */
 export function hue(str) {
@@ -14,12 +14,27 @@ export function hue(str) {
 export const spineColor = b => `hsl(${hue(b.title + (b.authors[0] || ''))} 32% 40%)`;
 const initials = t => String(t).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
-// Cover-Bild; fehlt es oder lädt es nicht, erscheinen die Initialen auf farbigem Grund.
+// Cover-Adresse zur ISBN bei Open Library, deren Cover frei verwendet werden dürfen.
+// Die Nationalbibliothek hat zwar Cover, lässt sie aber nicht in fremde Seiten einbinden.
+function isbnCovers(isbn) {
+  const i13 = toIsbn13(isbn);
+  return i13.length === 13 ? [`https://covers.openlibrary.org/b/isbn/${i13}-M.jpg?default=false`] : [];
+}
+
+// Alle Bilder, die als Cover infrage kommen: eigenes Foto, gespeicherter Link, dann die ISBN-Dienste
+export function coverSources(b) {
+  if (b.cover === NO_COVER) return [];
+  if (b.cover === LOCAL) return [localUrl(b.id)].filter(Boolean);
+  return [...new Set([b.cover, ...isbnCovers(b.isbn)])].filter(Boolean);
+}
+
+// Cover-Bild; lädt eine Quelle nicht, wird die nächste probiert (siehe main.js),
+// am Ende erscheinen die Initialen auf farbigem Grund.
 export function cover(b, size = '') {
   const style = `background:${spineColor(b)}`;
-  const src = b.cover === LOCAL ? localUrl(b.id) : b.cover;
+  const [src, ...next] = coverSources(b);
   if (src) {
-    return `<div class="cover has-img ${size}" style="${style}"><img src="${esc(src)}" alt="" loading="lazy" data-fallback="${esc(initials(b.title))}"></div>`;
+    return `<div class="cover has-img ${size}" style="${style}"><img src="${esc(src)}" alt="" loading="lazy" data-id="${esc(b.id)}" data-next="${esc(next.join(' '))}" data-fallback="${esc(initials(b.title))}"></div>`;
   }
   return `<div class="cover ${size}" style="${style}">${esc(initials(b.title))}</div>`;
 }

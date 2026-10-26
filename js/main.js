@@ -6,7 +6,8 @@ import { initRandom, renderRandom, resetPick } from './views/random.js';
 import { initSettings, renderSettings } from './views/settings.js';
 import { initEdit } from './dialogs/edit.js';
 import { initAdd } from './dialogs/add.js';
-import { loadAll as loadCovers } from './covers.js';
+import { loadAll as loadCovers, LOCAL, NO_COVER } from './covers.js';
+import { store, save } from './store.js';
 
 const VIEWS = {
   library:  { title: 'Bibliothek',    render: renderLibrary,  fab: true },
@@ -38,12 +39,37 @@ $$('.tabs button').forEach(b => b.addEventListener('click', () => show(b.dataset
 // Schließen-Buttons in allen Dialogen
 $$('[data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
 
-// Cover, die nicht laden, durch Initialen ersetzen
-document.addEventListener('error', e => {
-  const img = e.target;
-  if (img.tagName !== 'IMG' || img.dataset.fallback === undefined) return;
+// Cover, das nicht lädt: nächste Quelle probieren, zuletzt durch Initialen ersetzen
+function nextCover(img) {
+  const [src, ...rest] = img.dataset.next.split(' ').filter(Boolean);
+  if (src) {
+    img.dataset.next = rest.join(' ');
+    img.dataset.switched = '1';
+    img.src = src;
+    return;
+  }
   img.parentNode.classList.remove('has-img');
   img.replaceWith(document.createTextNode(img.dataset.fallback));
+}
+
+// Gefundene Quelle beim Buch merken, damit beim nächsten Mal nicht erneut gesucht wird
+let saveTimer;
+function rememberCover(img) {
+  const b = store.db.books.find(x => x.id === img.dataset.id);
+  if (!b || b.cover === LOCAL || b.cover === NO_COVER) return;
+  b.cover = img.getAttribute('src');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 1000);
+}
+
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (img.tagName === 'IMG' && img.dataset.fallback !== undefined) nextCover(img);
+}, true);
+
+document.addEventListener('load', e => {
+  const img = e.target;
+  if (img.tagName === 'IMG' && img.dataset.fallback !== undefined && img.dataset.switched) rememberCover(img);
 }, true);
 
 // Nach jeder Datenänderung neu zeichnen
