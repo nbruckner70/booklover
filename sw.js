@@ -1,4 +1,4 @@
-const APP_CACHE = 'booklover-app-v8';
+const APP_CACHE = 'booklover-app-v9';
 const COVER_CACHE = 'lesestapel-covers';
 
 const ASSETS = [
@@ -28,7 +28,8 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(APP_CACHE).then(c => c.addAll(ASSETS)));
+  // cache: 'reload' holt die Dateien am Zwischenspeicher von Chrome vorbei, sonst mischen sich alte und neue Versionen
+  e.waitUntil(caches.open(APP_CACHE).then(c => c.addAll(ASSETS.map(a => new Request(a, { cache: 'reload' })))));
   self.skipWaiting();
 });
 
@@ -45,10 +46,11 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
-  // Eigene Dateien: zuerst aus dem Netz (damit Updates ankommen), offline aus dem Speicher
+  // Eigene Dateien: zuerst aus dem Netz (damit Updates ankommen), offline aus dem Speicher.
+  // no-cache: beim Server nachfragen, ob sich die Datei geändert hat, statt eine alte Kopie zu nehmen.
   if (url.origin === location.origin) {
     e.respondWith(
-      fetch(e.request)
+      fetch(e.request, { cache: 'no-cache' })
         .then(r => {
           const copy = r.clone();
           caches.open(APP_CACHE).then(c => c.put(e.request, copy));
