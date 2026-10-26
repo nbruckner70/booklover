@@ -2,8 +2,8 @@
 import { $, $$, esc, toast, emit } from '../ui.js';
 import { store, save, addList, addTag } from '../store.js';
 import { cleanIsbn, seriesKey, seriesNr, booksOfSeries } from '../logic.js';
-import { cover, chip, ratingText } from '../templates.js';
-import { LOCAL, prepareImage, putCover, deleteCover } from '../covers.js';
+import { cover, coverSources, chip, ratingText } from '../templates.js';
+import { LOCAL, NO_COVER, prepareImage, putCover, deleteCover } from '../covers.js';
 
 let editing = null;   // das Buch-Objekt, das gerade bearbeitet wird
 let isNew = false;
@@ -66,7 +66,7 @@ export function openEdit(id, fresh) {
   field('fIsbn').value = b.isbn;
   field('fYear').value = b.year;
   field('fPages').value = b.pages;
-  field('fCover').value = b.cover === LOCAL ? '' : b.cover;
+  field('fCover').value = b.cover === LOCAL || b.cover === NO_COVER ? '' : b.cover;
   field('fNotes').value = b.notes;
 
   selLists = new Set(b.lists);
@@ -77,7 +77,7 @@ export function openEdit(id, fresh) {
   pendingCover = null;
   clearPreviewUrl();
   $('#coverBtn').textContent = b.cover === LOCAL ? 'Foto ändern' : 'Eigenes Foto';
-  $('#coverRemove').hidden = !b.cover;
+  $('#coverRemove').hidden = !coverSources(b).length;
 
   refreshSeriesNames();
   renderChips();
@@ -90,8 +90,8 @@ export function openEdit(id, fresh) {
 
 function showCoverPreview(src) {
   $('#editCoverWrap').innerHTML = cover({ ...editing, title: field('fTitle').value || editing.title, cover: src }, 'lg');
-  $('#coverBtn').textContent = src ? 'Foto ändern' : 'Eigenes Foto';
-  $('#coverRemove').hidden = !src;
+  $('#coverBtn').textContent = src !== NO_COVER ? 'Foto ändern' : 'Eigenes Foto';
+  $('#coverRemove').hidden = src === NO_COVER;
 }
 
 function clearPreviewUrl() {
@@ -118,15 +118,16 @@ function removeCover() {
   pendingCover = 'remove';
   clearPreviewUrl();
   field('fCover').value = '';
-  showCoverPreview('');
+  showCoverPreview(NO_COVER);
 }
 
 // Ermittelt das Cover beim Speichern und räumt ein altes eigenes Foto weg, wenn es ersetzt wird.
 async function resolveCover(b) {
   const hadLocal = b.cover === LOCAL;
   if (pendingCover instanceof Blob) { await putCover(b.id, pendingCover); return LOCAL; }
-  if (pendingCover === 'remove') { if (hadLocal) await deleteCover(b.id); return ''; }
+  if (pendingCover === 'remove') { if (hadLocal) await deleteCover(b.id); return NO_COVER; }
   const link = field('fCover').value.trim();
+  if (b.cover === NO_COVER && !link) return NO_COVER; // bleibt ohne Cover
   if (hadLocal && !link) return LOCAL;          // eigenes Foto bleibt
   if (hadLocal && link) await deleteCover(b.id); // Link ersetzt das Foto
   return link;
