@@ -8,7 +8,7 @@
   width: 48px; height: 72px; flex: none; overflow: hidden;
   border-radius: 3px 6px 6px 3px; background: var(--line);
   display: flex; align-items: flex-end; justify-content: center;
-  color: #fff; font: 600 .8rem/1 var(--serif); padding: 0 0 8px;
+  color: #fff; font: 600 .8rem/1 var(--sans); padding: 0 0 8px;
   box-shadow: inset 3px 0 0 rgba(0, 0, 0, .18);
 }
 .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -21,7 +21,7 @@
 .cover.has-img.xl { padding: 0; }
 
 .meta { min-width: 0; flex: 1; }
-.meta .t { font: 600 1.02rem/1.25 var(--serif); color: var(--text); overflow-wrap: anywhere; }
+.meta .t { font: 600 1rem/1.3 var(--sans); color: var(--text); overflow-wrap: anywhere; }
 .meta .a { color: var(--muted); font-size: .88rem; margin-top: 2px; }
 .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .badge { font-size: .75rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
@@ -39,13 +39,13 @@
 .vol .nr { width: 34px; flex: none; text-align: center; font: 600 1rem var(--serif); color: var(--muted); }
 .vol.read .nr { color: var(--teal); }
 .vol.next .nr { color: var(--on-accent); background: var(--accent); border-radius: 6px; padding: 2px 0; }
-.vol .vt { flex: 1; min-width: 0; font-family: var(--serif); }
-.vol .vs { font-size: .78rem; color: var(--muted); font-family: var(--sans); }
+.vol .vt { flex: 1; min-width: 0; font-weight: 500; }
+.vol .vs { font-size: .78rem; color: var(--muted); font-weight: 400; }
 
 /* ---------- Zufall: das gezogene Buch ---------- */
 .pick { text-align: center; padding: 20px 0 16px; }
 .pick .label { margin: 0 0 12px; font-size: .85rem; letter-spacing: .04em; color: var(--muted); }
-.pick h2 { font: 600 1.5rem/1.2 var(--serif); margin: 0 0 4px; color: var(--ink); }
+.pick h2 { font: 600 1.4rem/1.25 var(--sans); margin: 0 0 4px; color: var(--ink); }
 .pick .a { color: var(--muted); }
 .pick .why { margin: 12px auto 0; max-width: 34ch; font-size: .92rem; color: var(--teal); }
 .pick .row { justify-content: center; margin-top: 16px; }
