@@ -63,8 +63,21 @@ export function labelOptions(lists, tags, allText) {
 }
 
 /* ---------- Reihen ---------- */
-export function seriesBlock(vols, next) {
-  const read = vols.filter(v => v.status === 'read').length;
+const readCount = vols => vols.filter(v => v.status === 'read').length;
+
+// Kachel im Raster: Cover des ersten Bandes, darunter Reihenname und Fortschritt
+export function seriesTile(key, vols) {
+  return `
+    <li class="book" data-series="${esc(key)}">
+      ${cover(vols[0], 'fill')}
+      <div class="t">${esc(vols[0].series.name.trim())}</div>
+      <div class="ts">${readCount(vols)} von ${vols.length} gelesen</div>
+    </li>`;
+}
+
+// Detailseite einer Reihe: Fortschritt und alle Bände mit Cover und Status
+export function seriesDetail(vols, next) {
+  const read = readCount(vols);
   let sub = `${read} von ${vols.length} im Regal gelesen`;
   if (!next) sub += '. Reihe abgeschlossen';
   else if (next.status === 'reading') sub += `. Du liest gerade Band ${next.series.nr || '?'}`;
@@ -73,14 +86,20 @@ export function seriesBlock(vols, next) {
     const isNext = v === next;
     const state = isNext && v.status === 'unread' ? 'Als Nächstes dran' : STATUS[v.status];
     return `
-      <div class="vol ${v.status === 'read' ? 'read' : ''} ${isNext ? 'next' : ''}" data-id="${v.id}" role="button" tabindex="0">
-        <span class="nr">${esc(v.series.nr !== '' ? v.series.nr : '?')}</span>
-        <span class="vt">${esc(v.title)}<div class="vs">${state}</div></span>
+      <div class="vol ${v.status} ${isNext ? 'next' : ''}" data-id="${v.id}" role="button" tabindex="0">
+        ${cover(v)}
+        <span class="vt">
+          <span class="vn">Band ${esc(v.series.nr !== '' ? v.series.nr : '?')}</span>
+          ${esc(v.title)}
+          <span class="vs">${state}</span>
+        </span>
+        ${v.status === 'read' ? '<span class="check" aria-hidden="true">✓</span>' : ''}
       </div>`;
   }).join('');
 
   return `
     <div class="series-block">
+      <button class="btn ghost back" id="seriesBack">‹ Alle Reihen</button>
       <h2>${esc(vols[0].series.name.trim())}</h2>
       <div class="sub">${sub}</div>
       <div class="progress"><span style="width:${Math.round(read / vols.length * 100)}%"></span></div>
