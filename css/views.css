@@ -6,7 +6,9 @@
 }
 .book { min-width: 0; cursor: pointer; }
 .book:active .cover { opacity: .8; }
-.book .t { margin-top: 8px; font-size: .9rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.book .t, .book .ts { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.book .t { margin-top: 8px; font-size: .9rem; }
+.book .ts { font-size: .75rem; color: var(--muted); }
 
 .cover {
   width: 48px; height: 72px; flex: none; overflow: hidden;
@@ -32,16 +34,19 @@
 
 /* ---------- Reihen ---------- */
 .series-block { margin: 0 0 22px; }
-.series-block h2 { font: 600 1.2rem/1.2 var(--serif); margin: 0; color: var(--ink); }
+.series-block .back { padding-left: 0; margin-bottom: 4px; text-decoration: none; }
+.series-block h2 { font: 600 1.3rem/1.2 var(--serif); margin: 0; color: var(--ink); }
 .series-block .sub { color: var(--muted); font-size: .85rem; margin: 2px 0 8px; }
 .progress { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
 .progress span { display: block; height: 100%; background: var(--teal); }
-.vol { display: flex; align-items: center; gap: 12px; padding: 8px 2px; border-bottom: 1px solid var(--line); }
-.vol .nr { width: 34px; flex: none; text-align: center; font: 600 1rem var(--serif); color: var(--muted); }
-.vol.read .nr { color: var(--teal); }
-.vol.next .nr { color: var(--on-accent); background: var(--accent); border-radius: 6px; padding: 2px 0; }
+.vol { display: flex; align-items: center; gap: 14px; padding: 10px 2px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.vol:active { background: var(--surface); }
 .vol .vt { flex: 1; min-width: 0; font-weight: 500; }
-.vol .vs { font-size: .78rem; color: var(--muted); font-weight: 400; }
+.vol .vn, .vol .vs { display: block; font-size: .78rem; font-weight: 400; color: var(--muted); }
+.vol .vn { margin-bottom: 2px; }
+.vol.read .vs { color: var(--teal); }
+.vol.reading .vs, .vol.next .vs { color: var(--accent); font-weight: 600; }
+.vol .check { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--teal); color: var(--bg); font-weight: 700; }
 
 /* ---------- Zufall: das gezogene Buch ---------- */
 .pick { text-align: center; padding: 20px 0 16px; }

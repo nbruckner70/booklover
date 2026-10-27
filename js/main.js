@@ -1,7 +1,7 @@
 // Einstiegspunkt: verbindet alle Teile und startet die App.
 import { $, $$, on } from './ui.js';
 import { initLibrary, renderLibrary } from './views/library.js';
-import { initSeries, renderSeries } from './views/series.js';
+import { initSeries, renderSeries, closeSeries } from './views/series.js';
 import { initRandom, renderRandom, resetPick } from './views/random.js';
 import { initSettings, renderSettings } from './views/settings.js';
 import { initEdit } from './dialogs/edit.js';
@@ -29,6 +29,7 @@ function show(view) {
   $('#viewTitle').textContent = VIEWS[view].title;
   $('#fab').hidden = !VIEWS[view].fab;
   if (view !== 'random') resetPick();
+  closeSeries();
   renderAll();
   window.scrollTo(0, 0);
 }
