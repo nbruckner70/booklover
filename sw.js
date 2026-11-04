@@ -1,4 +1,4 @@
-const APP_CACHE = 'booklover-app-v12';
+const APP_CACHE = 'booklover-app-v13';
 const COVER_CACHE = 'lesestapel-covers';
 
 const ASSETS = [
@@ -21,6 +21,7 @@ const ASSETS = [
   './js/templates.js',
   './js/views/library.js',
   './js/views/series.js',
+  './js/views/reading.js',
   './js/views/random.js',
   './js/views/settings.js',
   './js/dialogs/edit.js',
