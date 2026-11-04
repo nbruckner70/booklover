@@ -60,7 +60,12 @@
         <label class="grow">Gelesene Seiten<input id="logPages" type="number" inputmode="numeric" min="1" placeholder="z. B. 40"></label>
         <label class="grow">Tag<input id="logDate" type="date"></label>
       </div>
-      <label>Buch (freiwillig)<select id="logBook"></select></label>
+      <div class="book-pick">
+        <label for="logBookQ">Buch (freiwillig)</label>
+        <div id="logBookChosen"></div>
+        <input type="search" id="logBookQ" placeholder="Titel, Autor oder Reihe suchen" autocomplete="off" enterkeyhint="search">
+        <ul class="hits" id="logBookHits"></ul>
+      </div>
       <button class="btn primary big" type="submit">Eintragen</button>
     </form>
     <div class="stats" id="logStats"></div>
