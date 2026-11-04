@@ -15,7 +15,8 @@ export function clampRating(r) {
 }
 
 export function blankDb() {
-  return { books: [], lists: [], tags: ['5 Star Read', 'English Book'] };
+  // reading: Lese-Tracker, ein Eintrag pro gelesener Portion { id, date: "JJJJ-MM-TT", pages, book: Buch-ID oder '' }
+  return { books: [], lists: [], tags: ['5 Star Read', 'English Book'], reading: [] };
 }
 
 export function newBook(data = {}) {
@@ -48,6 +49,9 @@ export function normalize(d) {
     series: b.series && b.series.name ? { name: b.series.name, nr: b.series.nr ?? '' } : null,
     added: b.added || Date.now()
   }));
+  d.reading = (d.reading || [])
+    .filter(e => e && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && parseInt(e.pages) > 0)
+    .map(e => ({ id: e.id || uid(), date: e.date, pages: parseInt(e.pages), book: e.book || '' }));
   return d;
 }
 
@@ -94,6 +98,16 @@ export function addTag(name) {
 export function findByIsbn(isbn) {
   const i = toIsbn13(isbn);
   return i ? store.db.books.find(b => toIsbn13(b.isbn) === i) : null;
+}
+
+export function addReading(date, pages, book) {
+  store.db.reading.push({ id: uid(), date, pages, book });
+  save();
+}
+
+export function deleteReading(id) {
+  store.db.reading = store.db.reading.filter(e => e.id !== id);
+  save();
 }
 
 store.db = load();
