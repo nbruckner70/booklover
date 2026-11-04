@@ -147,3 +147,47 @@ export function settingsItem(name, count, kind, key) {
 export function chip(label, attr, value, pressed) {
   return `<button class="chip" data-${attr}="${esc(value)}" aria-pressed="${pressed}">${esc(label)}</button>`;
 }
+
+/* ---------- Lesen ---------- */
+const fromIso = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+export const longDay = s => fromIso(s).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+export const monthTitle = (year, month) => new Date(year, month, 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+const pagesText = n => `${n} ${n === 1 ? 'Seite' : 'Seiten'}`;
+
+// Farbstufe eines Tages nach Seitenzahl
+const level = n => !n ? 0 : n < 25 ? 1 : n < 50 ? 2 : n < 100 ? 3 : 4;
+
+// Monatskalender ab Montag; days aus monthGrid, byDay aus pagesByDay
+export function calendar(days, byDay, selected, today) {
+  const head = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(d => `<span class="wd">${d}</span>`).join('');
+  const cells = days.map(day => {
+    if (!day) return '<span></span>';
+    const n = byDay[day] || 0;
+    const cls = ['day', `l${level(n)}`, day === today ? 'today' : '', day === selected ? 'sel' : ''].join(' ');
+    return `
+      <button class="${cls}" data-day="${day}" ${day > today ? 'disabled' : ''} aria-label="${longDay(day)}: ${n ? pagesText(n) : 'nichts gelesen'}">
+        <span class="dn">${Number(day.slice(8))}</span>${n ? `<span class="dp">${n}</span>` : ''}
+      </button>`;
+  }).join('');
+  return head + cells;
+}
+
+export function readingStats(monthPages, monthDays, streak) {
+  const tile = (value, label) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`;
+  return tile(monthPages, 'Seiten im Monat') +
+    tile(monthDays, monthDays === 1 ? 'Lesetag' : 'Lesetage') +
+    tile(streak, streak === 1 ? 'Tag in Folge' : 'Tage in Folge');
+}
+
+// Einträge eines Tages; bookTitle liefert zum Buch den Titel oder ''
+export function dayEntries(day, entries, bookTitle) {
+  const total = entries.reduce((s, e) => s + e.pages, 0);
+  const rows = entries.map(e => `
+    <li>
+      <span class="grow"><strong>${pagesText(e.pages)}</strong>${bookTitle(e.book) ? ` · ${esc(bookTitle(e.book))}` : ''}</span>
+      <button class="icon-btn" data-delete="${e.id}" aria-label="Eintrag löschen">✕</button>
+    </li>`).join('');
+  return `
+    <h3>${longDay(day)}${total ? ` · ${pagesText(total)}` : ''}</h3>
+    ${entries.length ? `<ul class="entries">${rows}</ul>` : '<p class="hint">An diesem Tag ist nichts eingetragen.</p>'}`;
+}
