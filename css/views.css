@@ -51,6 +51,22 @@
 /* ---------- Lesen ---------- */
 .log-form { margin-bottom: 18px; }
 .log-form .btn.big { margin-top: 2px; }
+.book-pick { margin-bottom: 12px; }
+.book-pick label { margin-bottom: 4px; }
+.book-pick input[hidden] { display: none; }
+.cover.sm { width: 34px; height: 51px; font-size: .65rem; padding-bottom: 5px; }
+.hits { list-style: none; margin: 6px 0 0; padding: 0; }
+.hits .hint { margin: 2px 0 0; }
+.hits .hl { font-size: .75rem; color: var(--muted); margin: 4px 0 2px; }
+.hit, .picked {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background: none; border: 0; border-bottom: 1px solid var(--line); padding: 6px 2px; color: var(--text);
+}
+.hit:active { background: var(--surface); }
+.hit .grow, .picked .grow { flex: 1; min-width: 0; }
+.hit strong, .picked strong { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hit small, .picked small { display: block; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picked { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 4px 6px 10px; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
 .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center; }
 .stat strong { display: block; font-size: 1.35rem; color: var(--ink); }
