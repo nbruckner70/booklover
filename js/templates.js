@@ -149,6 +149,20 @@ export function chip(label, attr, value, pressed) {
 }
 
 /* ---------- Lesen ---------- */
+const bookLine = b => `${cover(b, 'sm')}
+  <span class="grow"><strong>${esc(b.title)}</strong><small>${esc(b.authors.join(', ') || STATUS[b.status])}</small></span>`;
+
+// Gewähltes Buch beim Eintragen, mit Knopf zum Abwählen
+export const pickedBook = b => `<div class="picked">${bookLine(b)}
+  <button type="button" class="icon-btn" data-clear aria-label="Anderes Buch wählen">✕</button></div>`;
+
+// Treffer der Buchsuche; heading steht darüber (z. B. „Lese gerade“)
+export function bookHits(books, heading, emptyText) {
+  if (!books.length) return emptyText ? `<li class="hint">${esc(emptyText)}</li>` : '';
+  return (heading ? `<li class="hl">${esc(heading)}</li>` : '') +
+    books.map(b => `<li><button type="button" class="hit" data-pick="${esc(b.id)}">${bookLine(b)}</button></li>`).join('');
+}
+
 const fromIso = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 export const longDay = s => fromIso(s).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
 export const monthTitle = (year, month) => new Date(year, month, 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
