@@ -100,3 +100,37 @@ export function drawCandidates(books, filter = '') {
   if (filter.startsWith('l:')) return out.filter(b => b.lists.includes(filter.slice(2)));
   return out;
 }
+
+/* ---------- Lese-Tracker ---------- */
+// Tage werden als „JJJJ-MM-TT“ in Ortszeit gespeichert, damit ein Eintrag um 23:30 nicht beim nächsten Tag landet.
+export function isoDay(date = new Date()) {
+  const p = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}`;
+}
+
+// Seiten pro Tag: { "2026-11-04": 85, … }
+export function pagesByDay(entries) {
+  const out = {};
+  for (const e of entries) out[e.date] = (out[e.date] || 0) + e.pages;
+  return out;
+}
+
+// Alle Tage eines Monats für ein Kalenderraster ab Montag; null = leeres Feld vor dem 1.
+export function monthGrid(year, month) {
+  const first = new Date(year, month, 1);
+  const lead = (first.getDay() + 6) % 7; // Montag = 0
+  const days = new Date(year, month + 1, 0).getDate();
+  return [
+    ...Array(lead).fill(null),
+    ...Array.from({ length: days }, (_, i) => isoDay(new Date(year, month, i + 1)))
+  ];
+}
+
+// Tage in Folge mit Lesen. Ist heute noch nichts eingetragen, zählt die Strähne bis gestern weiter.
+export function readingStreak(byDay, today = new Date()) {
+  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (!byDay[isoDay(d)]) d.setDate(d.getDate() - 1);
+  let n = 0;
+  while (byDay[isoDay(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
