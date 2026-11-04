@@ -49,7 +49,7 @@
 .vol .check { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--teal); color: var(--bg); font-weight: 700; }
 
 /* ---------- Zufall: das gezogene Buch ---------- */
-.pick { text-align: center; padding: 20px 0 16px; }
+.pick { text-align: center; padding: 20px 0 16px; overflow-x: clip; } /* wegfliegendes Papier soll nicht seitlich scrollen lassen */
 .pick .label { margin: 0 0 12px; font-size: .85rem; letter-spacing: .04em; color: var(--muted); }
 .pick h2 { font: 600 1.4rem/1.25 var(--sans); margin: 0 0 4px; color: var(--ink); }
 .pick .a { color: var(--muted); }
@@ -99,16 +99,41 @@
 .gift .tail.l { left: 37px; transform: rotate(30deg); }
 .gift .tail.r { right: 37px; transform: rotate(-30deg); }
 
-.unwrap.open .gift { animation: gift-fade 1s ease-in-out .2s forwards; pointer-events: none; }
-.unwrap.open .bow { animation: bow-off .4s ease-out forwards; }
-.unwrap.open .paper.l { animation: paper-l 1s ease-in-out .2s forwards; }
-.unwrap.open .paper.r { animation: paper-r 1s ease-in-out .2s forwards; }
-.unwrap.open + .info { animation: fade .6s ease-out 1s backwards; }
-@keyframes gift-fade { 40% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes bow-off { to { opacity: 0; transform: translateY(-10px) scale(.9); } }
-@keyframes paper-l { to { transform: translateX(-40%) rotate(-5deg); } }
-@keyframes paper-r { to { transform: translateX(40%) rotate(5deg); } }
-@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+/* Auspacken in Etappen, bewusst nicht gleichmäßig und nicht spiegelgleich:
+   1. das Geschenk wackelt kurz (Vorfreude)
+   2. die Schleife springt ab und fliegt schräg weg
+   3. das Papier fällt nach außen, links etwas früher als rechts
+   4. das Buch federt hervor, danach erscheinen Titel und Buttons */
+/* Buch und Geschenk wackeln gemeinsam, sonst blitzen die Ecken des Covers hervor */
+.unwrap.open { transform-origin: 50% 100%; animation: gift-wiggle .6s cubic-bezier(.36, .07, .19, .97); }
+.unwrap.open .gift { pointer-events: none; animation: gift-fade .4s ease-in 1.3s forwards; }
+.unwrap.open .bow { animation: bow-off .7s cubic-bezier(.3, 0, .6, 1) .5s forwards; }
+.unwrap.open .paper.l { animation: paper-l .95s cubic-bezier(.55, 0, .8, .5) .8s forwards; }
+.unwrap.open .paper.r { animation: paper-r .85s cubic-bezier(.55, 0, .8, .5) .92s forwards; }
+.unwrap.open .cover { animation: cover-pop .7s cubic-bezier(.34, 1.56, .64, 1) 1s backwards; }
+.unwrap.open + .info { animation: rise .6s ease-out 1.5s backwards; }
+
+@keyframes gift-wiggle {
+  20% { transform: rotate(-3deg); }
+  40% { transform: rotate(2.5deg); }
+  60% { transform: rotate(-1.5deg); }
+  80% { transform: rotate(.7deg); }
+}
+@keyframes gift-fade { to { box-shadow: none; } }
+@keyframes bow-off {
+  25% { transform: translateY(-8px) scale(1.12); }
+  100% { opacity: 0; transform: translate(34px, -80px) rotate(40deg) scale(.8); }
+}
+@keyframes paper-l {
+  20% { transform: rotate(-7deg); }
+  100% { opacity: 0; transform: translate(-70%, 45%) rotate(-32deg); }
+}
+@keyframes paper-r {
+  25% { transform: rotate(5deg); }
+  100% { opacity: 0; transform: translate(80%, 30%) rotate(24deg); }
+}
+@keyframes cover-pop { from { transform: scale(.92); } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
 /* Ohne Animationen bleibt das Papier sonst liegen */
 @media (prefers-reduced-motion: reduce) {
   .unwrap.open .gift { display: none; }
