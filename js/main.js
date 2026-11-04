@@ -2,6 +2,7 @@
 import { $, $$, on } from './ui.js';
 import { initLibrary, renderLibrary } from './views/library.js';
 import { initSeries, renderSeries, closeSeries } from './views/series.js';
+import { initReading, renderReading } from './views/reading.js';
 import { initRandom, renderRandom, resetPick } from './views/random.js';
 import { initSettings, renderSettings } from './views/settings.js';
 import { initEdit } from './dialogs/edit.js';
@@ -12,6 +13,7 @@ import { store, save } from './store.js';
 const VIEWS = {
   library:  { title: 'Bibliothek',    render: renderLibrary,  fab: true },
   series:   { title: 'Reihen',        render: renderSeries,   fab: true },
+  reading:  { title: 'Lesen',         render: renderReading,  fab: false },
   random:   { title: 'Zufall',        render: renderRandom,   fab: false },
   settings: { title: 'Einstellungen', render: renderSettings, fab: false }
 };
@@ -78,6 +80,7 @@ on('changed', () => { resetPick(); renderAll(); });
 
 initLibrary();
 initSeries();
+initReading();
 initRandom();
 initSettings();
 initEdit();
