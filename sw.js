@@ -1,4 +1,4 @@
-const APP_CACHE = 'booklover-app-v14';
+const APP_CACHE = 'booklover-app-v15';
 const COVER_CACHE = 'lesestapel-covers';
 
 const ASSETS = [
