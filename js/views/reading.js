@@ -1,4 +1,4 @@
-// Ansicht "Lesen": gelesene Seiten pro Tag eintragen und im Monatskalender ansehen.
+// Ansicht "Lesen": gelesene Seiten (von–bis) pro Tag eintragen und im Monatskalender ansehen.
 import { $, toast } from '../ui.js';
 import { store, addReading, deleteReading } from '../store.js';
 import { isoDay, pagesByDay, monthGrid, readingStreak } from '../logic.js';
@@ -42,10 +42,20 @@ function renderBookPick() {
     : bookHits(readingNow(), 'Lese gerade', '');
 }
 
+// Vorschlag für "Von Seite": die Seite nach der letzten eingetragenen Bis-Seite des Buchs
+function nextPage(book) {
+  if (!book) return '';
+  const last = Math.max(0, ...store.db.reading.filter(e => e.book === book.id && e.to).map(e => e.to));
+  return last ? last + 1 : '';
+}
+
+const fillFrom = () => { $('#logFrom').value = nextPage(currentBook()); };
+
 function pickBook(id) {
   chosenBook = id;
   $('#logBookQ').value = '';
   renderBookPick();
+  fillFrom();
 }
 
 export function renderReading() {
@@ -56,6 +66,7 @@ export function renderReading() {
   const inMonth = days.filter(d => d && byDay[d]);
 
   renderBookPick();
+  if (!$('#logFrom').value) fillFrom();
   $('#logDate').max = today;
   if (!$('#logDate').value) $('#logDate').value = selected;
 
@@ -85,14 +96,19 @@ function selectDay(day) {
 
 function submit(e) {
   e.preventDefault();
-  const pages = parseInt($('#logPages').value);
+  const from = parseInt($('#logFrom').value);
+  const to = parseInt($('#logTo').value);
   const date = $('#logDate').value;
-  if (!(pages > 0)) { toast('Bitte eine Seitenzahl eintragen.'); $('#logPages').focus(); return; }
+  if (!(from > 0)) { toast('Bitte die erste gelesene Seite eintragen.'); $('#logFrom').focus(); return; }
+  if (!(to > 0)) { toast('Bitte die letzte gelesene Seite eintragen.'); $('#logTo').focus(); return; }
+  if (to < from) { toast('„Bis Seite“ darf nicht kleiner sein als „Von Seite“.'); $('#logTo').focus(); return; }
   if (!date || date > isoDay()) { toast('Bitte einen Tag bis heute wählen.'); return; }
-  addReading(date, pages, (currentBook() || {}).id || '');
-  $('#logPages').value = '';
-  $('#logPages').blur();
-  toast(`${pages} ${pages === 1 ? 'Seite' : 'Seiten'} am ${longDay(date)} eingetragen`);
+  addReading(date, from, to, (currentBook() || {}).id || '');
+  const pages = to - from + 1;
+  $('#logFrom').value = to + 1; // beim nächsten Mal geht es auf der folgenden Seite weiter
+  $('#logTo').value = '';
+  $('#logTo').blur();
+  toast(`S. ${from}–${to} (${pages} ${pages === 1 ? 'Seite' : 'Seiten'}) am ${longDay(date)} eingetragen`);
   selectDay(date);
 }
 

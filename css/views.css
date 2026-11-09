@@ -51,6 +51,10 @@
 /* ---------- Lesen ---------- */
 .log-form { margin-bottom: 18px; }
 .log-form .btn.big { margin-top: 2px; }
+/* Von / Bis / Tag nebeneinander; auf sehr schmalen Handys rutscht der Tag in die nächste Zeile */
+.log-form .row { flex-wrap: wrap; row-gap: 0; }
+.log-form .page { flex: 1 1 80px; min-width: 0; }
+.log-form .date { flex: 1.6 1 140px; min-width: 0; }
 .book-pick { margin-bottom: 12px; }
 .book-pick label { margin-bottom: 4px; }
 .book-pick input[hidden] { display: none; }
