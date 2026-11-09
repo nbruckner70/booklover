@@ -198,7 +198,7 @@ export function dayEntries(day, entries, bookTitle) {
   const total = entries.reduce((s, e) => s + e.pages, 0);
   const rows = entries.map(e => `
     <li>
-      <span class="grow"><strong>${pagesText(e.pages)}</strong>${bookTitle(e.book) ? ` · ${esc(bookTitle(e.book))}` : ''}</span>
+      <span class="grow"><strong>${pagesText(e.pages)}</strong>${e.from ? ` (S. ${e.from}–${e.to})` : ''}${bookTitle(e.book) ? ` · ${esc(bookTitle(e.book))}` : ''}</span>
       <button class="icon-btn" data-delete="${e.id}" aria-label="Eintrag löschen">✕</button>
     </li>`).join('');
   return `
