@@ -15,7 +15,8 @@ export function clampRating(r) {
 }
 
 export function blankDb() {
-  // reading: Lese-Tracker, ein Eintrag pro gelesener Portion { id, date: "JJJJ-MM-TT", pages, book: Buch-ID oder '' }
+  // reading: Lese-Tracker, ein Eintrag pro gelesener Portion
+  // { id, date: "JJJJ-MM-TT", pages, book: Buch-ID oder '', from, to: Seitenbereich (fehlt bei alten Einträgen) }
   return { books: [], lists: [], tags: ['5 Star Read', 'English Book'], reading: [] };
 }
 
@@ -51,7 +52,12 @@ export function normalize(d) {
   }));
   d.reading = (d.reading || [])
     .filter(e => e && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && parseInt(e.pages) > 0)
-    .map(e => ({ id: e.id || uid(), date: e.date, pages: parseInt(e.pages), book: e.book || '' }));
+    .map(e => {
+      const entry = { id: e.id || uid(), date: e.date, pages: parseInt(e.pages), book: e.book || '' };
+      const from = parseInt(e.from), to = parseInt(e.to);
+      if (from > 0 && to >= from) Object.assign(entry, { from, to });
+      return entry;
+    });
   return d;
 }
 
@@ -100,8 +106,9 @@ export function findByIsbn(isbn) {
   return i ? store.db.books.find(b => toIsbn13(b.isbn) === i) : null;
 }
 
-export function addReading(date, pages, book) {
-  store.db.reading.push({ id: uid(), date, pages, book });
+// Seitenbereich von–bis, beide Seiten mitgezählt: 41 bis 80 = 40 Seiten
+export function addReading(date, from, to, book) {
+  store.db.reading.push({ id: uid(), date, pages: to - from + 1, book, from, to });
   save();
 }
 
