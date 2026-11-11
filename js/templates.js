@@ -1,36 +1,36 @@
-// Alle HTML-Bausteine, die zur Laufzeit erzeugt werden.
-// Die festen Teile der Seite (Navigation, Dialoge) stehen in index.html.
+// All HTML snippets generated at runtime.
+// The fixed parts of the page (navigation, dialogs) are in index.html.
 import { esc } from './ui.js';
-import { STATUS, seriesKey, toIsbn13 } from './logic.js';
+import { STATUS, NO_GENRE, seriesKey, toIsbn13 } from './logic.js';
 import { LOCAL, NO_COVER, localUrl } from './covers.js';
 
-/* ---------- Farben und Cover ---------- */
+/* ---------- Colours and covers ---------- */
 export function hue(str) {
   let h = 0;
   for (const c of String(str)) h = (h * 31 + c.charCodeAt(0)) % 360;
   return h;
 }
 export const spineColor = b => `hsl(${hue(b.title + (b.authors[0] || ''))} 32% 40%)`;
-// Anfangsbuchstaben der ersten zwei Wörter; Satzzeichen wie „–“ oder „»“ zählen nicht
+// Initials of the first two words; punctuation such as "–" or "»" does not count
 const initials = t => String(t).split(/\s+/).map(w => w.replace(/^[^\p{L}\d]+/u, '')).filter(Boolean)
   .slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
-// Cover-Adresse zur ISBN bei Open Library, deren Cover frei verwendet werden dürfen.
-// Die Nationalbibliothek hat zwar Cover, lässt sie aber nicht in fremde Seiten einbinden.
+// Cover URL for the ISBN at Open Library, whose covers may be used freely.
+// The German National Library has covers too, but does not allow embedding them in other sites.
 function isbnCovers(isbn) {
   const i13 = toIsbn13(isbn);
   return i13.length === 13 ? [`https://covers.openlibrary.org/b/isbn/${i13}-M.jpg?default=false`] : [];
 }
 
-// Alle Bilder, die als Cover infrage kommen: eigenes Foto, gespeicherter Link, dann die ISBN-Dienste
+// All images that could serve as cover: own photo, saved link, then the ISBN services
 export function coverSources(b) {
   if (b.cover === NO_COVER) return [];
   if (b.cover === LOCAL) return [localUrl(b.id)].filter(Boolean);
   return [...new Set([b.cover, ...isbnCovers(b.isbn)])].filter(Boolean);
 }
 
-// Cover-Bild; lädt eine Quelle nicht, wird die nächste probiert (siehe main.js),
-// am Ende erscheinen die Initialen auf farbigem Grund.
+// Cover image; if a source fails to load, the next one is tried (see main.js),
+// finally the initials appear on a coloured background.
 export function cover(b, size = '') {
   const style = `background:${spineColor(b)}`;
   const [src, ...next] = coverSources(b);
@@ -40,13 +40,13 @@ export function cover(b, size = '') {
   return `<div class="cover ${size}" style="${style}">${esc(initials(b.title))}</div>`;
 }
 
-/* ---------- Sterne ---------- */
+/* ---------- Stars ---------- */
 export const ratingText = r => r ? `${String(r).replace('.', ',')} von 5 Sternen` : 'Nicht bewertet';
 
 export const emptyState = (title, text) => `<div class="empty"><strong>${esc(title)}</strong>${esc(text)}</div>`;
 
-/* ---------- Bibliothek ---------- */
-// Kachel im Raster: Cover und darunter der Titel in einer Zeile
+/* ---------- Library ---------- */
+// Grid tile: cover with the title in one line below
 export function bookTile(b) {
   return `
     <li class="book" data-id="${b.id}">
@@ -55,17 +55,24 @@ export function bookTile(b) {
     </li>`;
 }
 
-// Auswahlfeld mit allen Listen und Tags
+// Select options with all lists and tags
 export function labelOptions(lists, tags, allText) {
   return `<option value="">${esc(allText)}</option>` +
     (lists.length ? `<optgroup label="Listen">${lists.map(l => `<option value="l:${esc(l.id)}">${esc(l.name)}</option>`).join('')}</optgroup>` : '') +
     (tags.length ? `<optgroup label="Tags">${tags.map(t => `<option value="t:${esc(t)}">${esc(t)}</option>`).join('')}</optgroup>` : '');
 }
 
-/* ---------- Reihen ---------- */
+// Select options for the genre filter; noneText adds an entry for books without a genre
+export function genreOptions(genres, allText, noneText) {
+  return `<option value="">${esc(allText)}</option>` +
+    genres.map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join('') +
+    (noneText ? `<option value="${NO_GENRE}">${esc(noneText)}</option>` : '');
+}
+
+/* ---------- Series ---------- */
 const readCount = vols => vols.filter(v => v.status === 'read').length;
 
-// Kachel im Raster: Cover des ersten Bandes, darunter Reihenname und Fortschritt
+// Grid tile: cover of the first volume, below it series name and progress
 export function seriesTile(key, vols) {
   return `
     <li class="book" data-series="${esc(key)}">
@@ -75,7 +82,7 @@ export function seriesTile(key, vols) {
     </li>`;
 }
 
-// Detailseite einer Reihe: Fortschritt und alle Bände mit Cover und Status
+// Series detail page: progress and all volumes with cover and status
 export function seriesDetail(vols, next) {
   const read = readCount(vols);
   let sub = `${read} von ${vols.length} im Regal gelesen`;
@@ -107,17 +114,17 @@ export function seriesDetail(vols, next) {
     </div>`;
 }
 
-/* ---------- Zufall ---------- */
+/* ---------- Random pick ---------- */
 const gift = () => `<div class="gift" aria-hidden="true"><span class="paper l"></span><span class="paper r"></span><span class="bow"><i class="tail l"></i><i class="tail r"></i><b class="knot"></b></span></div>`;
 
-// Vor dem Ziehen: nur das verpackte Geschenk
+// Before drawing: only the wrapped gift
 export function giftCard() {
   return `
     <p class="label">Dein nächstes Buch wartet schon</p>
     <div class="unwrap">${gift()}</div>`;
 }
 
-// Nach dem Ziehen: das Geschenk liegt über dem Cover und wird ausgepackt
+// After drawing: the gift lies over the cover and gets unwrapped
 export function pickCard(b, why) {
   return `
     <p class="label">Heute dran</p>
@@ -133,7 +140,7 @@ export function pickCard(b, why) {
     </div>`;
 }
 
-/* ---------- Einstellungen ---------- */
+/* ---------- Settings ---------- */
 export function settingsItem(name, count, kind, key) {
   return `
     <div class="set-item">
@@ -143,20 +150,20 @@ export function settingsItem(name, count, kind, key) {
     </div>`;
 }
 
-/* ---------- Bearbeiten ---------- */
+/* ---------- Edit ---------- */
 export function chip(label, attr, value, pressed) {
   return `<button class="chip" data-${attr}="${esc(value)}" aria-pressed="${pressed}">${esc(label)}</button>`;
 }
 
-/* ---------- Lesen ---------- */
+/* ---------- Reading ---------- */
 const bookLine = b => `${cover(b, 'sm')}
   <span class="grow"><strong>${esc(b.title)}</strong><small>${esc(b.authors.join(', ') || STATUS[b.status])}</small></span>`;
 
-// Gewähltes Buch beim Eintragen, mit Knopf zum Abwählen
+// Chosen book when logging, with a button to deselect it
 export const pickedBook = b => `<div class="picked">${bookLine(b)}
   <button type="button" class="icon-btn" data-clear aria-label="Anderes Buch wählen">✕</button></div>`;
 
-// Treffer der Buchsuche; heading steht darüber (z. B. „Lese gerade“)
+// Book search hits; heading is shown above them (e.g. "Lese gerade")
 export function bookHits(books, heading, emptyText) {
   if (!books.length) return emptyText ? `<li class="hint">${esc(emptyText)}</li>` : '';
   return (heading ? `<li class="hl">${esc(heading)}</li>` : '') +
@@ -168,10 +175,10 @@ export const longDay = s => fromIso(s).toLocaleDateString('de-DE', { weekday: 'l
 export const monthTitle = (year, month) => new Date(year, month, 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
 const pagesText = n => `${n} ${n === 1 ? 'Seite' : 'Seiten'}`;
 
-// Farbstufe eines Tages nach Seitenzahl
+// Colour level of a day by number of pages
 const level = n => !n ? 0 : n < 25 ? 1 : n < 50 ? 2 : n < 100 ? 3 : 4;
 
-// Monatskalender ab Montag; days aus monthGrid, byDay aus pagesByDay
+// Month calendar starting on Monday; days from monthGrid, byDay from pagesByDay
 export function calendar(days, byDay, selected, today) {
   const head = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(d => `<span class="wd">${d}</span>`).join('');
   const cells = days.map(day => {
@@ -193,7 +200,7 @@ export function readingStats(monthPages, monthDays, streak) {
     tile(streak, streak === 1 ? 'Tag in Folge' : 'Tage in Folge');
 }
 
-// Einträge eines Tages; bookTitle liefert zum Buch den Titel oder ''
+// Entries of one day; bookTitle returns the title of a book or ''
 export function dayEntries(day, entries, bookTitle) {
   const total = entries.reduce((s, e) => s + e.pages, 0);
   const rows = entries.map(e => `
