@@ -1,11 +1,11 @@
-// Ansicht "Reihen": Raster aller Reihen; ein Tipp öffnet die Detailseite mit allen Bänden.
+// "Reihen" (series) view: grid of all series; a tap opens the detail page with all volumes.
 import { $ } from '../ui.js';
 import { store } from '../store.js';
 import { seriesKey, booksOfSeries, nextOfSeries } from '../logic.js';
 import { seriesTile, seriesDetail, emptyState } from '../templates.js';
 import { openEdit } from '../dialogs/edit.js';
 
-let openKey = ''; // Reihe, deren Detailseite gerade offen ist
+let openKey = ''; // series whose detail page is currently open
 
 export function renderSeries() {
   const books = store.db.books;
@@ -17,7 +17,7 @@ export function renderSeries() {
       'Öffne ein Buch und trage unter „Reihe“ den Namen und die Band-Nummer ein. Bücher mit gleichem Reihennamen werden hier zusammengefasst.');
     return;
   }
-  if (!keys.includes(openKey)) openKey = ''; // z. B. weil die Reihe umbenannt wurde
+  if (!keys.includes(openKey)) openKey = ''; // e.g. because the series was renamed
 
   if (openKey) {
     $('#count').textContent = '';
@@ -28,7 +28,7 @@ export function renderSeries() {
   }
 }
 
-// Die Detailseite bekommt einen Eintrag im Verlauf, damit die Zurück-Taste am Handy zum Raster führt.
+// The detail page gets a history entry so the phone's back button leads back to the grid.
 function openSeries(key) {
   openKey = key;
   history.pushState({ series: key }, '');
@@ -36,7 +36,7 @@ function openSeries(key) {
   window.scrollTo(0, 0);
 }
 
-// Beim Wechsel in einen anderen Reiter wieder mit dem Raster beginnen
+// When switching to another tab, start with the grid again
 export function closeSeries() {
   if (!openKey) return;
   openKey = '';
