@@ -1,11 +1,11 @@
-// Dialog "Buch hinzufügen" und Kamera-Scanner.
+// "Add book" dialog and camera scanner.
 import { $, toast, emit } from '../ui.js';
 import { store, save, newBook, findByIsbn, QUICK_KEY } from '../store.js';
 import { toIsbn13 } from '../logic.js';
 import { lookup } from '../api.js';
 import { openEdit } from './edit.js';
 
-/* ---------- ISBN eingeben ---------- */
+/* ---------- Enter ISBN ---------- */
 async function addByIsbn(raw) {
   const isbn = toIsbn13(raw);
   if (isbn.length !== 13) { toast('Das ist keine gültige ISBN (10 oder 13 Stellen).'); return; }
@@ -65,7 +65,7 @@ async function tick() {
       const codes = await detector.detect($('#video'));
       const hit = codes.find(c => /^97[89]\d{10}$/.test(c.rawValue));
       if (hit) handleCode(hit.rawValue);
-    } catch (e) { /* einzelnes Bild nicht lesbar */ }
+    } catch (e) { /* single frame not readable */ }
   }
   setTimeout(tick, 180);
 }
@@ -84,11 +84,11 @@ function logLine(text) {
 
 async function handleCode(isbn) {
   const now = Date.now();
-  if (isbn === lastCode && now - lastTime < 4000) return; // gleiches Buch nicht doppelt
+  if (isbn === lastCode && now - lastTime < 4000) return; // do not add the same book twice
   lastCode = isbn; lastTime = now;
   if (navigator.vibrate) navigator.vibrate(50);
 
-  // Normaler Modus: Scanner schließen und Buch zum Prüfen öffnen
+  // Normal mode: close the scanner and open the book for checking
   if (!$('#quickMode').checked) {
     $('#dlgScan').close();
     $('#isbnIn').value = isbn;
@@ -97,7 +97,7 @@ async function handleCode(isbn) {
     return;
   }
 
-  // Schnell-Modus: direkt speichern und weiterscannen
+  // Quick mode: save right away and keep scanning
   busy = true;
   const dupe = findByIsbn(isbn);
   if (dupe) {
@@ -116,7 +116,7 @@ async function handleCode(isbn) {
   busy = false;
 }
 
-/* ---------- Verdrahtung ---------- */
+/* ---------- Wiring ---------- */
 export function initAdd() {
   $('#fab').addEventListener('click', () => { $('#isbnIn').value = ''; $('#dlgAdd').showModal(); });
   $('#manualBtn').addEventListener('click', () => { $('#dlgAdd').close(); openEdit(null, newBook()); });

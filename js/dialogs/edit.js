@@ -1,14 +1,14 @@
-// Dialog "Buch bearbeiten" (auch für neue Bücher).
+// "Edit book" dialog (also used for new books).
 import { $, $$, esc, toast, emit } from '../ui.js';
 import { store, save, addList, addTag } from '../store.js';
-import { cleanIsbn, seriesKey, seriesNr, booksOfSeries } from '../logic.js';
+import { cleanIsbn, seriesKey, seriesNr, booksOfSeries, genresOf } from '../logic.js';
 import { cover, coverSources, chip, ratingText } from '../templates.js';
 import { LOCAL, NO_COVER, prepareImage, putCover, deleteCover } from '../covers.js';
 
-let editing = null;   // das Buch-Objekt, das gerade bearbeitet wird
+let editing = null;   // the book object currently being edited
 let isNew = false;
 let selLists, selTags, selStatus, selRating;
-// Cover-Änderung bis zum Speichern: null = keine, Blob = neues Foto, 'remove' = entfernen
+// Pending cover change until saved: null = none, Blob = new photo, 'remove' = remove
 let pendingCover = null, previewUrl = '';
 
 const field = id => $('#' + id);
@@ -16,6 +16,16 @@ const field = id => $('#' + id);
 function refreshSeriesNames() {
   const names = [...new Set(store.db.books.filter(seriesKey).map(b => b.series.name.trim()))].sort();
   $('#seriesNames').innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
+}
+
+// Suggestions for the genre field: genres already in use first, then common ones not used yet
+const COMMON_GENRES = ['Fantasy', 'Romantasy', 'Romance', 'Dark Romance', 'Thriller', 'Krimi', 'Science-Fiction',
+  'Dystopie', 'Horror', 'Historischer Roman', 'Young Adult', 'Gegenwartsliteratur', 'Klassiker', 'Sachbuch', 'Biografie'];
+
+function refreshGenreNames() {
+  const used = genresOf(store.db.books);
+  const names = [...used.map(g => g.name), ...COMMON_GENRES.filter(n => !used.some(g => g.key === n.toLowerCase()))];
+  $('#genreNames').innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
 }
 
 function renderStatus() {
@@ -50,7 +60,7 @@ function updateSeriesHint() {
   field('fNr').placeholder = `Band, z. B. ${max + 1}`;
 }
 
-// id: bestehendes Buch öffnen; fresh: neues (noch nicht gespeichertes) Buch-Objekt
+// id: open an existing book; fresh: new (not yet saved) book object
 export function openEdit(id, fresh) {
   isNew = !!fresh;
   editing = fresh || store.db.books.find(b => b.id === id);
@@ -61,6 +71,7 @@ export function openEdit(id, fresh) {
   $('#editCoverWrap').innerHTML = cover(b, 'lg');
   field('fTitle').value = b.title;
   field('fAuthors').value = b.authors.join(', ');
+  field('fGenre').value = b.genre || '';
   field('fSeries').value = b.series ? b.series.name : '';
   field('fNr').value = b.series ? b.series.nr : '';
   field('fIsbn').value = b.isbn;
@@ -80,6 +91,7 @@ export function openEdit(id, fresh) {
   $('#coverRemove').hidden = !coverSources(b).length;
 
   refreshSeriesNames();
+  refreshGenreNames();
   renderChips();
   renderStatus();
   renderRating();
@@ -121,15 +133,15 @@ function removeCover() {
   showCoverPreview(NO_COVER);
 }
 
-// Ermittelt das Cover beim Speichern und räumt ein altes eigenes Foto weg, wenn es ersetzt wird.
+// Determines the cover when saving and removes an old own photo when it gets replaced.
 async function resolveCover(b) {
   const hadLocal = b.cover === LOCAL;
   if (pendingCover instanceof Blob) { await putCover(b.id, pendingCover); return LOCAL; }
   if (pendingCover === 'remove') { if (hadLocal) await deleteCover(b.id); return NO_COVER; }
   const link = field('fCover').value.trim();
-  if (b.cover === NO_COVER && !link) return NO_COVER; // bleibt ohne Cover
-  if (hadLocal && !link) return LOCAL;          // eigenes Foto bleibt
-  if (hadLocal && link) await deleteCover(b.id); // Link ersetzt das Foto
+  if (b.cover === NO_COVER && !link) return NO_COVER; // stays without cover
+  if (hadLocal && !link) return LOCAL;          // own photo stays
+  if (hadLocal && link) await deleteCover(b.id); // link replaces the photo
   return link;
 }
 
@@ -142,6 +154,7 @@ async function saveBook() {
   Object.assign(b, {
     title,
     authors: field('fAuthors').value.split(',').map(s => s.trim()).filter(Boolean),
+    genre: field('fGenre').value.trim(),
     series: seriesName ? { name: seriesName, nr: field('fNr').value.trim().replace(',', '.') } : null,
     isbn: cleanIsbn(field('fIsbn').value),
     year: field('fYear').value.trim(),
@@ -177,7 +190,7 @@ function toggleIn(set, value, chipEl) {
 }
 
 export function initEdit() {
-  // 10 unsichtbare Tippflächen über den Sternen: linke Hälfte = halber Stern, rechte = ganzer
+  // 10 invisible tap areas over the stars: left half = half star, right half = full star
   $('#fRatingHits').innerHTML = Array.from({ length: 10 }, (_, i) => {
     const v = (i + 1) / 2;
     return `<button type="button" data-v="${v}" aria-label="${ratingText(v)}"></button>`;
@@ -186,7 +199,7 @@ export function initEdit() {
     const b = e.target.closest('button');
     if (!b) return;
     const v = parseFloat(b.dataset.v);
-    selRating = v === selRating ? 0 : v; // gleichen Wert nochmal tippen = entfernen
+    selRating = v === selRating ? 0 : v; // tapping the same value again = remove
     renderRating();
   });
   $('#fRatingClear').addEventListener('click', () => { selRating = 0; renderRating(); });

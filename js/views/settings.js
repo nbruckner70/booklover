@@ -1,4 +1,4 @@
-// Ansicht "Einstellungen": Darstellung, Listen, Tags, Sicherung.
+// "Einstellungen" (settings) view: theme, lists, tags, backup.
 import { $, $$, toast, emit } from '../ui.js';
 import { store, save, addList, addTag, replaceDb, normalize, blankDb, storedSizeKb } from '../store.js';
 import { settingsItem } from '../templates.js';
@@ -19,11 +19,11 @@ export function renderSettings() {
     (photos ? `, dazu ${photos} ${photos === 1 ? 'eigenes Coverfoto' : 'eigene Coverfotos'}.` : '.');
 }
 
-/* ---------- Darstellung ---------- */
-// Gleicher Schlüssel wie im Skript im <head> von index.html
+/* ---------- Theme ---------- */
+// Same key as in the script in the <head> of index.html
 const THEME_KEY = 'booklover-theme';
 
-// '' = wie am Handy, 'light' oder 'dark' = fest gewählt
+// '' = follow the phone, 'light' or 'dark' = fixed choice
 const currentTheme = () => document.documentElement.dataset.theme || '';
 
 function renderTheme() {
@@ -69,7 +69,7 @@ function deleteTag(old) {
   save(); emit('changed');
 }
 
-// Kürzt Titel aus Importen und übernimmt die Reihe aus dem Titel, wenn noch keine eingetragen ist.
+// Shortens imported titles and takes the series from the title if none is set yet.
 function tidyTitles() {
   const changes = store.db.books
     .map(b => {

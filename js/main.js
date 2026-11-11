@@ -1,4 +1,4 @@
-// Einstiegspunkt: verbindet alle Teile und startet die App.
+// Entry point: wires up all parts and starts the app.
 import { $, $$, on } from './ui.js';
 import { initLibrary, renderLibrary } from './views/library.js';
 import { initSeries, renderSeries, closeSeries } from './views/series.js';
@@ -20,7 +20,7 @@ const VIEWS = {
 let current = 'library';
 
 function renderAll() {
-  $('#count').textContent = ''; // die Bibliothek setzt ihren Zähler selbst
+  $('#count').textContent = ''; // the library sets its own counter
   VIEWS[current].render();
 }
 
@@ -39,10 +39,10 @@ function show(view) {
 // Navigation
 $$('.tabs button').forEach(b => b.addEventListener('click', () => show(b.dataset.view)));
 
-// Schließen-Buttons in allen Dialogen
+// Close buttons in all dialogs
 $$('[data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
 
-// Cover, das nicht lädt: nächste Quelle probieren, zuletzt durch Initialen ersetzen
+// Cover that fails to load: try the next source, finally replace it with the initials
 function nextCover(img) {
   const [src, ...rest] = img.dataset.next.split(' ').filter(Boolean);
   if (src) {
@@ -55,7 +55,7 @@ function nextCover(img) {
   img.replaceWith(document.createTextNode(img.dataset.fallback));
 }
 
-// Gefundene Quelle beim Buch merken, damit beim nächsten Mal nicht erneut gesucht wird
+// Remember the working source on the book so it is not searched again next time
 let saveTimer;
 function rememberCover(img) {
   const b = store.db.books.find(x => x.id === img.dataset.id);
@@ -75,7 +75,7 @@ document.addEventListener('load', e => {
   if (img.tagName === 'IMG' && img.dataset.fallback !== undefined && img.dataset.switched) rememberCover(img);
 }, true);
 
-// Nach jeder Datenänderung neu zeichnen
+// Redraw after every data change
 on('changed', () => { resetPick(); renderAll(); });
 
 initLibrary();
@@ -86,9 +86,9 @@ initSettings();
 initEdit();
 initAdd();
 
-// Chrome bitten, die Daten nicht automatisch zu löschen; Offline-Betrieb aktivieren
+// Ask Chrome not to clear the data automatically; enable offline use
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 renderAll();
-loadCovers().then(renderAll); // eigene Fotos nachladen und anzeigen
+loadCovers().then(renderAll); // load own photos and show them

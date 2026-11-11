@@ -1,4 +1,4 @@
-const APP_CACHE = 'booklover-app-v15';
+const APP_CACHE = 'booklover-app-v17';
 const COVER_CACHE = 'lesestapel-covers';
 
 const ASSETS = [
@@ -29,7 +29,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', e => {
-  // cache: 'reload' holt die Dateien am Zwischenspeicher von Chrome vorbei, sonst mischen sich alte und neue Versionen
+  // cache: 'reload' bypasses Chrome's HTTP cache, otherwise old and new versions get mixed
   e.waitUntil(caches.open(APP_CACHE).then(c => c.addAll(ASSETS.map(a => new Request(a, { cache: 'reload' })))));
   self.skipWaiting();
 });
@@ -47,8 +47,8 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
-  // Eigene Dateien: zuerst aus dem Netz (damit Updates ankommen), offline aus dem Speicher.
-  // no-cache: beim Server nachfragen, ob sich die Datei geändert hat, statt eine alte Kopie zu nehmen.
+  // Own files: network first (so updates arrive), from the cache when offline.
+  // no-cache: ask the server whether the file has changed instead of using an old copy.
   if (url.origin === location.origin) {
     e.respondWith(
       fetch(e.request, { cache: 'no-cache' })
@@ -62,7 +62,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cover-Bilder: einmal laden, danach auch offline verfügbar
+  // Cover images: load once, then available offline too
   if (e.request.destination === 'image') {
     e.respondWith(
       caches.open(COVER_CACHE).then(async c => {

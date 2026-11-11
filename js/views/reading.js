@@ -1,26 +1,26 @@
-// Ansicht "Lesen": gelesene Seiten (von–bis) pro Tag eintragen und im Monatskalender ansehen.
+// "Lesen" (reading) view: log pages read (from–to) per day and see them in a month calendar.
 import { $, toast } from '../ui.js';
 import { store, addReading, deleteReading } from '../store.js';
 import { isoDay, pagesByDay, monthGrid, readingStreak } from '../logic.js';
 import { calendar, readingStats, dayEntries, longDay, monthTitle, pickedBook, bookHits } from '../templates.js';
 
-let year = new Date().getFullYear(), month = new Date().getMonth(); // angezeigter Monat
-let selected = isoDay();  // angetippter Tag
-let chosenBook = null;    // null = noch nichts gewählt, '' = bewusst ohne Buch, sonst Buch-ID
+let year = new Date().getFullYear(), month = new Date().getMonth(); // month shown
+let selected = isoDay();  // tapped day
+let chosenBook = null;    // null = nothing chosen yet, '' = deliberately without a book, otherwise book ID
 
 const findBook = id => store.db.books.find(b => b.id === id);
 const bookTitle = id => (findBook(id) || {}).title || '';
 const byTitle = (a, b) => a.title.localeCompare(b.title, 'de');
 const readingNow = () => store.db.books.filter(b => b.status === 'reading').sort(byTitle);
 
-// Ohne eigene Wahl ist das erste Buch vorausgewählt, das gerade gelesen wird.
+// Without an explicit choice, the first book currently being read is preselected.
 function currentBook() {
   if (chosenBook === null) return readingNow()[0] || null;
   return chosenBook ? findBook(chosenBook) || null : null;
 }
 
-// Suche nach Titel, Autor oder Reihe; alle eingegebenen Wörter müssen vorkommen.
-// Bücher, die gerade gelesen werden, und Titel mit passendem Anfang stehen oben.
+// Search by title, author or series; all words entered must match.
+// Books currently being read and titles with a matching start come first.
 function searchBooks(query) {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const hay = b => [b.title, b.authors.join(' '), b.series ? b.series.name : ''].join(' ').toLowerCase();
@@ -30,7 +30,7 @@ function searchBooks(query) {
     .slice(0, 8);
 }
 
-// Gewähltes Buch anzeigen, sonst Suchfeld mit Treffern (ohne Suchwort: die Bücher, die gerade gelesen werden)
+// Show the chosen book, otherwise the search field with hits (without a search term: the books currently being read)
 function renderBookPick() {
   const book = currentBook();
   const q = $('#logBookQ');
@@ -42,7 +42,7 @@ function renderBookPick() {
     : bookHits(readingNow(), 'Lese gerade', '');
 }
 
-// Vorschlag für "Von Seite": die Seite nach der letzten eingetragenen Bis-Seite des Buchs
+// Suggestion for "Von Seite": the page after the book's last logged "Bis Seite"
 function nextPage(book) {
   if (!book) return '';
   const last = Math.max(0, ...store.db.reading.filter(e => e.book === book.id && e.to).map(e => e.to));
@@ -105,7 +105,7 @@ function submit(e) {
   if (!date || date > isoDay()) { toast('Bitte einen Tag bis heute wählen.'); return; }
   addReading(date, from, to, (currentBook() || {}).id || '');
   const pages = to - from + 1;
-  $('#logFrom').value = to + 1; // beim nächsten Mal geht es auf der folgenden Seite weiter
+  $('#logFrom').value = to + 1; // next time continues on the following page
   $('#logTo').value = '';
   $('#logTo').blur();
   toast(`S. ${from}–${to} (${pages} ${pages === 1 ? 'Seite' : 'Seiten'}) am ${longDay(date)} eingetragen`);
@@ -117,7 +117,7 @@ export function initReading() {
   $('#logBookQ').addEventListener('input', renderBookPick);
   $('#logBookQ').addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
-    e.preventDefault(); // Enter wählt den ersten Treffer, statt das Formular abzuschicken
+    e.preventDefault(); // Enter picks the first hit instead of submitting the form
     const first = $('#logBookHits [data-pick]');
     if (first) pickBook(first.dataset.pick);
   });

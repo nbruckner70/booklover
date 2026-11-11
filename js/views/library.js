@@ -1,17 +1,32 @@
-// Ansicht "Bibliothek": Suche, Filter, Sortierung und Bücherliste.
+// "Bibliothek" (library) view: search, filters, sorting and book list.
 import { $, $$ } from '../ui.js';
 import { store } from '../store.js';
-import { seriesKey, seriesNr } from '../logic.js';
-import { bookTile, emptyState, labelOptions } from '../templates.js';
+import { seriesKey, seriesNr, matchesLabel, matchesGenre, genresOf } from '../logic.js';
+import { bookTile, emptyState, labelOptions, genreOptions } from '../templates.js';
 import { openEdit } from '../dialogs/edit.js';
 
 let statusFilter = 'all';
 
-// Füllt ein Auswahlfeld mit Listen und Tags und behält die aktuelle Auswahl bei.
+// Keeps the current choice of a select if it still exists, otherwise falls back to "all".
+function keepValue(select, current) {
+  select.value = [...select.options].some(o => o.value === current) ? current : '';
+}
+
+// Fills a select with all lists and tags and keeps the current choice.
 export function fillLabelSelect(select, allText) {
   const current = select.value;
   select.innerHTML = labelOptions(store.db.lists, store.db.tags, allText);
-  select.value = [...select.options].some(o => o.value === current) ? current : '';
+  keepValue(select, current);
+}
+
+// Fills a select with all genres in use and keeps the current choice.
+// Hides the select while no book has a genre yet.
+export function fillGenreSelect(select, allText, noneText = '', wrap = select) {
+  const current = select.value;
+  const genres = genresOf(store.db.books);
+  select.innerHTML = genreOptions(genres, allText, genres.length ? noneText : '');
+  keepValue(select, current);
+  wrap.hidden = !genres.length;
 }
 
 const cmp = (a, b) => a.localeCompare(b, 'de');
@@ -30,12 +45,11 @@ const SORTERS = {
   }
 };
 
-function matches(b, query, label) {
+function matches(b, query, label, genre) {
   if (statusFilter !== 'all' && b.status !== statusFilter) return false;
-  if (label.startsWith('t:') && !b.tags.includes(label.slice(2))) return false;
-  if (label.startsWith('l:') && !b.lists.includes(label.slice(2))) return false;
+  if (!matchesLabel(b, label) || !matchesGenre(b, genre)) return false;
   if (query) {
-    const hay = [b.title, b.authors.join(' '), b.series ? b.series.name : '', b.isbn, b.tags.join(' ')].join(' ').toLowerCase();
+    const hay = [b.title, b.authors.join(' '), b.series ? b.series.name : '', b.genre, b.isbn, b.tags.join(' ')].join(' ').toLowerCase();
     if (!hay.includes(query)) return false;
   }
   return true;
@@ -43,15 +57,24 @@ function matches(b, query, label) {
 
 export function renderLibrary() {
   fillLabelSelect($('#labelFilter'), 'Alle Listen und Tags');
+  fillGenreSelect($('#genreFilter'), 'Alle Genres', 'Ohne Genre', $('#genreFilterWrap'));
   const query = $('#q').value.trim().toLowerCase();
   const label = $('#labelFilter').value;
-  const list = store.db.books.filter(b => matches(b, query, label)).sort(SORTERS[$('#sortSel').value]);
+  const genre = $('#genreFilter').value;
+  const list = store.db.books.filter(b => matches(b, query, label, genre)).sort(SORTERS[$('#sortSel').value]);
 
   $('#bookList').innerHTML = list.map(bookTile).join('');
 
-  // Zähler oben: bei aktivem Filter oder Suche nur die angezeigten Bücher
+  // Filter button: number of active filters (sorting does not count)
+  const active = [statusFilter !== 'all', label, genre].filter(Boolean).length;
+  $('#filterBtn').classList.toggle('on', active > 0);
+  $('#filterBadge').textContent = active;
+  $('#filterBadge').hidden = !active;
+  $('#filterBtn').setAttribute('aria-label', active ? `Filtern und sortieren, ${active} aktiv` : 'Filtern und sortieren');
+
+  // Counter at the top: with an active filter or search only the books shown
   const total = store.db.books.length;
-  const filtered = statusFilter !== 'all' || query || label;
+  const filtered = statusFilter !== 'all' || query || label || genre;
   $('#count').textContent = filtered
     ? `${list.length} von ${total} Büchern`
     : `${total} ${total === 1 ? 'Buch' : 'Bücher'}`;
@@ -65,16 +88,33 @@ export function renderLibrary() {
   empty.hidden = list.length > 0;
 }
 
+function setStatus(status) {
+  statusFilter = status;
+  $$('#statusFilter button').forEach(x => x.setAttribute('aria-pressed', x.dataset.s === status));
+}
+
+// Back to all books, newest first
+function resetFilters() {
+  setStatus('all');
+  $('#genreFilter').value = '';
+  $('#labelFilter').value = '';
+  $('#sortSel').value = 'added';
+  renderLibrary();
+}
+
 export function initLibrary() {
+  // Changes in the filter sheet apply right away, so the list behind it updates live
+  $('#filterBtn').addEventListener('click', () => $('#dlgFilter').showModal());
+  $('#filterReset').addEventListener('click', resetFilters);
   $('#statusFilter').addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
-    statusFilter = btn.dataset.s;
-    $$('#statusFilter button').forEach(x => x.setAttribute('aria-pressed', x === btn));
+    setStatus(btn.dataset.s);
     renderLibrary();
   });
   $('#q').addEventListener('input', renderLibrary);
   $('#labelFilter').addEventListener('change', renderLibrary);
+  $('#genreFilter').addEventListener('change', renderLibrary);
   $('#sortSel').addEventListener('change', renderLibrary);
   $('#bookList').addEventListener('click', e => {
     const row = e.target.closest('.book');

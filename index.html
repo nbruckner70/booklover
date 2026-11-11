@@ -7,7 +7,7 @@
   <title>Booklover</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon-192.png">
-  <!-- Gewählte Darstellung sofort setzen, damit beim Start nichts aufblitzt (siehe views/settings.js) -->
+  <!-- Apply the chosen theme right away so nothing flashes on start (see views/settings.js) -->
   <script>try { const t = localStorage.getItem('booklover-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/base.css">
@@ -23,37 +23,25 @@
 </header>
 
 <main>
-  <!-- Bibliothek -->
+  <!-- Library -->
   <section class="view active" id="v-library">
     <div class="toolbar">
-      <input type="search" id="q" placeholder="Suche nach Titel, Autor, Reihe oder ISBN" aria-label="Suche">
-      <div class="seg" id="statusFilter" role="group" aria-label="Status">
-        <button data-s="all" aria-pressed="true">Alle</button>
-        <button data-s="unread" aria-pressed="false">Ungelesen</button>
-        <button data-s="reading" aria-pressed="false">Lese gerade</button>
-        <button data-s="read" aria-pressed="false">Gelesen</button>
-      </div>
-      <div class="row">
-        <select id="labelFilter" aria-label="Liste oder Tag"></select>
-        <select id="sortSel" aria-label="Sortierung">
-          <option value="added">Neueste zuerst</option>
-          <option value="title">Titel</option>
-          <option value="author">Autor</option>
-          <option value="rating">Beste Bewertung</option>
-          <option value="series">Reihe</option>
-        </select>
-      </div>
+      <input type="search" id="q" placeholder="Titel, Autor, Reihe oder ISBN" aria-label="Suche">
+      <button class="filter-btn" id="filterBtn" aria-label="Filtern und sortieren">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10m4 0h2M4 17h4m4 0h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        <span class="badge" id="filterBadge" hidden></span>
+      </button>
     </div>
     <ul class="books" id="bookList"></ul>
     <div id="emptyLib" hidden></div>
   </section>
 
-  <!-- Reihen -->
+  <!-- Series -->
   <section class="view" id="v-series">
     <div id="seriesWrap"></div>
   </section>
 
-  <!-- Lesen -->
+  <!-- Reading -->
   <section class="view" id="v-reading">
     <form class="log-form" id="logForm">
       <div class="row">
@@ -79,17 +67,20 @@
     <div class="day-detail" id="dayDetail"></div>
   </section>
 
-  <!-- Zufall -->
+  <!-- Random pick -->
   <section class="view" id="v-random">
     <div class="pick" id="pick" hidden></div>
     <label>Auswahl
       <select id="randFilter"></select>
     </label>
+    <label id="randGenreWrap">Genre
+      <select id="randGenre"></select>
+    </label>
     <button class="btn accent big" id="drawBtn">Nächstes Buch ziehen</button>
     <p class="hint" id="randInfo"></p>
   </section>
 
-  <!-- Einstellungen -->
+  <!-- Settings -->
   <section class="view set" id="v-settings">
     <h2>Darstellung</h2>
     <div class="seg" id="themeSel" role="group" aria-label="Darstellung">
@@ -153,7 +144,42 @@
   </button>
 </nav>
 
-<!-- Dialog: Buch hinzufügen -->
+<!-- Dialog: filter and sort the library -->
+<dialog class="sheet" id="dlgFilter">
+  <div class="sheet-head">
+    <h2>Filtern und sortieren</h2>
+    <button class="icon-btn" data-close aria-label="Schließen">✕</button>
+  </div>
+  <div class="sheet-body">
+    <fieldset>
+      <legend>Status</legend>
+      <div class="seg" id="statusFilter" role="group" aria-label="Status">
+        <button data-s="all" aria-pressed="true">Alle</button>
+        <button data-s="unread" aria-pressed="false">Ungelesen</button>
+        <button data-s="reading" aria-pressed="false">Lese gerade</button>
+        <button data-s="read" aria-pressed="false">Gelesen</button>
+      </div>
+    </fieldset>
+    <label id="genreFilterWrap">Genre<select id="genreFilter"></select></label>
+    <label>Liste oder Tag<select id="labelFilter"></select></label>
+    <label>Sortierung
+      <select id="sortSel">
+        <option value="added">Neueste zuerst</option>
+        <option value="title">Titel</option>
+        <option value="author">Autor</option>
+        <option value="rating">Beste Bewertung</option>
+        <option value="series">Reihe</option>
+      </select>
+    </label>
+  </div>
+  <div class="sheet-foot">
+    <button class="btn ghost" id="filterReset">Zurücksetzen</button>
+    <span class="grow"></span>
+    <button class="btn primary" data-close>Fertig</button>
+  </div>
+</dialog>
+
+<!-- Dialog: add book -->
 <dialog class="sheet" id="dlgAdd">
   <div class="sheet-head">
     <h2>Buch hinzufügen</h2>
@@ -169,7 +195,7 @@
   </div>
 </dialog>
 
-<!-- Dialog: Scanner -->
+<!-- Dialog: scanner -->
 <dialog class="scan" id="dlgScan">
   <video id="video" playsinline muted></video>
   <div class="reticle"></div>
@@ -181,7 +207,7 @@
   </div>
 </dialog>
 
-<!-- Dialog: Buch bearbeiten -->
+<!-- Dialog: edit book -->
 <dialog class="sheet" id="dlgEdit">
   <div class="sheet-head">
     <h2 id="editHead">Buch</h2>
@@ -198,6 +224,7 @@
       <div class="grow">
         <label>Titel<input id="fTitle"></label>
         <label>Autor (mehrere mit Komma trennen)<input id="fAuthors"></label>
+        <label>Genre<input id="fGenre" list="genreNames" placeholder="z. B. Fantasy" autocomplete="off"></label>
       </div>
     </div>
 
@@ -268,6 +295,7 @@
   </div>
 </dialog>
 <datalist id="seriesNames"></datalist>
+<datalist id="genreNames"></datalist>
 
 <div class="toast" id="toast" role="status"></div>
 

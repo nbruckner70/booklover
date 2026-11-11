@@ -1,4 +1,4 @@
-// Kleine Hilfsfunktionen, die überall gebraucht werden.
+// Small helpers used everywhere.
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -17,8 +17,8 @@ export function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
-// Einfacher Ereignis-Mechanismus, damit sich die Module nicht gegenseitig kennen müssen.
-// "changed" bedeutet: Daten haben sich geändert, Ansicht neu zeichnen.
+// Simple event mechanism so the modules do not need to know each other.
+// "changed" means: data has changed, redraw the view.
 const listeners = {};
 export function on(event, fn) { (listeners[event] ||= []).push(fn); }
 export function emit(event, data) { (listeners[event] || []).forEach(fn => fn(data)); }

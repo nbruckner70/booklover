@@ -1,4 +1,4 @@
-/* ---------- Dialoge (Bottom Sheets) ---------- */
+/* ---------- Dialogs (bottom sheets) ---------- */
 dialog { border: 0; padding: 0; background: var(--surface); color: var(--text); }
 dialog::backdrop { background: rgba(10, 14, 22, .55); }
 
@@ -12,7 +12,7 @@ dialog.sheet[open] { display: flex; }
 .sheet-head h2 { flex: 1; margin: 0; font: 600 1.25rem var(--serif); color: var(--ink); }
 .sheet-body { padding: 6px 18px 12px; overflow-y: auto; overscroll-behavior: contain; }
 
-/* Solange ein Dialog offen ist, bleibt die Seite dahinter stehen */
+/* While a dialog is open, the page behind it does not scroll */
 body:has(dialog[open]) { overflow: hidden; }
 dialog { overscroll-behavior: contain; }
 .sheet-foot {
@@ -46,7 +46,7 @@ dialog.scan[open] { display: flex; flex-direction: column; }
 #scanLog { list-style: none; margin: 6px 0 10px; padding: 0; max-height: 22vh; overflow-y: auto; font-size: .88rem; color: #c8ccd4; }
 #scanLog li { padding: 3px 0; }
 
-/* ---------- Kurzhinweis (Toast) ---------- */
+/* ---------- Toast message ---------- */
 .toast {
   position: fixed; left: 50%; z-index: 100;
   bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 90px);
