@@ -1,8 +1,8 @@
-// Buchdaten zu einer ISBN holen: zuerst Deutsche Nationalbibliothek, dann Google Books, sonst Open Library.
-// Google Books ohne eigenen Schlüssel ist oft ausgelastet (Fehler 429), deshalb nicht mehr an erster Stelle.
+// Fetch book data for an ISBN: first the German National Library (DNB), then Google Books, otherwise Open Library.
+// Google Books without an API key is often overloaded (error 429), so it is no longer tried first.
 import { toIsbn13, cleanTitle } from './logic.js';
 
-// Die DNB liefert MARC21-Datensätze; gebraucht werden nur wenige Felder.
+// The DNB returns MARC21 records; only a few fields are needed.
 async function fromDnb(isbn) {
   const r = await fetch(`https://services.dnb.de/sru/dnb?version=1.1&operation=searchRetrieve&query=num%3D${isbn}&recordSchema=MARC21-xml`);
   if (!r.ok) return null;
@@ -11,12 +11,12 @@ async function fromDnb(isbn) {
   if (!rec) return null;
   const sub = (tag, code) => {
     const f = rec.querySelector(`datafield[tag="${tag}"] subfield[code="${code}"]`);
-    // Steuerzeichen markieren in DNB-Daten Artikel, die beim Sortieren übersprungen werden
+    // In DNB data, control characters mark articles that are skipped when sorting
     return f ? f.textContent.replace(/[\u0098\u009C¬]/g, '').trim() : '';
   };
   const title = [sub('245', 'a'), sub('245', 'n'), sub('245', 'p')].filter(Boolean).join(' – ');
   if (!title) return null;
-  // „Fitzek, Sebastian“ → „Sebastian Fitzek“
+  // "Fitzek, Sebastian" → "Sebastian Fitzek"
   const authors = [...rec.querySelectorAll('datafield[tag="100"], datafield[tag="700"]')]
     .filter(f => !f.querySelector('subfield[code="4"]') || f.querySelector('subfield[code="4"]').textContent === 'aut')
     .map(f => (f.querySelector('subfield[code="a"]') || {}).textContent || '')
@@ -29,7 +29,7 @@ async function fromDnb(isbn) {
     authors,
     year: (sub('264', 'c').match(/\d{4}/) || [''])[0],
     pages: (sub('300', 'a').match(/(\d+) Seiten/) || ['', ''])[1],
-    cover: '', // findet die Anzeige über die ISBN, siehe coverSources in templates.js
+    cover: '', // found via the ISBN when displayed, see coverSources in templates.js
     series: seriesName ? { name: seriesName, nr: seriesNr } : null
   };
 }
@@ -74,7 +74,7 @@ export async function lookup(rawIsbn) {
       info.title = clean.title;
       info.series = info.series || clean.series;
       return info;
-    } catch (e) { /* offline oder Dienst nicht erreichbar: nächste Quelle */ }
+    } catch (e) { /* offline or service unreachable: try the next source */ }
   }
   return null;
 }
