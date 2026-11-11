@@ -1,5 +1,19 @@
-/* ---------- Bibliothek ---------- */
-.toolbar { display: grid; gap: 8px; margin-bottom: 12px; }
+/* ---------- Library ---------- */
+/* Search field with the filter button next to it; filters and sorting live in a bottom sheet */
+.toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+.toolbar input { flex: 1; min-width: 0; }
+.filter-btn {
+  position: relative; flex: none; width: 44px; height: 44px; display: grid; place-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; color: var(--ink);
+}
+.filter-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+/* With active filters the button is filled, the badge shows how many */
+.filter-btn.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.filter-btn .badge {
+  position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: 10px; background: var(--accent); color: var(--on-accent);
+  font-size: .72rem; font-weight: 700; line-height: 20px; text-align: center;
+}
 .books {
   list-style: none; margin: 0; padding: 4px 0 0;
   display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 20px 14px;
@@ -19,7 +33,7 @@
 }
 .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover.has-img { padding: 0; }
-/* Im Raster: so breit wie die Spalte, im Buchformat 2:3 */
+/* In the grid: as wide as the column, in 2:3 book format */
 .cover.fill {
   width: 100%; height: auto; aspect-ratio: 2 / 3; font-size: 1.3rem; padding-bottom: 14px;
   box-shadow: inset 4px 0 0 rgba(0, 0, 0, .18), 0 3px 10px rgba(0, 0, 0, .2);
@@ -32,7 +46,7 @@
 }
 .cover.has-img.xl { padding: 0; }
 
-/* ---------- Reihen ---------- */
+/* ---------- Series ---------- */
 .series-block { margin: 0 0 22px; }
 .series-block .back { padding-left: 0; margin-bottom: 4px; text-decoration: none; }
 .series-block h2 { font: 600 1.3rem/1.2 var(--serif); margin: 0; color: var(--ink); }
@@ -48,10 +62,10 @@
 .vol.reading .vs, .vol.next .vs { color: var(--accent); font-weight: 600; }
 .vol .check { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--teal); color: var(--bg); font-weight: 700; }
 
-/* ---------- Lesen ---------- */
+/* ---------- Reading ---------- */
 .log-form { margin-bottom: 18px; }
 .log-form .btn.big { margin-top: 2px; }
-/* Von / Bis / Tag nebeneinander; auf sehr schmalen Handys rutscht der Tag in die nächste Zeile */
+/* From / to / day side by side; on very narrow phones the day wraps to the next line */
 .log-form .row { flex-wrap: wrap; row-gap: 0; }
 .log-form .page { flex: 1 1 80px; min-width: 0; }
 .log-form .date { flex: 1.6 1 140px; min-width: 0; }
@@ -89,7 +103,7 @@
 .day:disabled { opacity: .35; cursor: default; }
 .day .dn { font-size: .8rem; }
 .day .dp { font-size: .78rem; font-weight: 700; }
-/* je mehr Seiten, desto kräftiger */
+/* the more pages, the stronger the colour */
 .day.l1 { background: color-mix(in srgb, var(--teal) 25%, var(--surface)); }
 .day.l2 { background: color-mix(in srgb, var(--teal) 50%, var(--surface)); }
 .day.l3 { background: color-mix(in srgb, var(--teal) 75%, var(--surface)); }
@@ -103,15 +117,15 @@
 .entries { list-style: none; margin: 0; padding: 0; }
 .entries li { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); }
 
-/* ---------- Zufall: das gezogene Buch ---------- */
-.pick { text-align: center; padding: 20px 0 16px; overflow-x: clip; } /* wegfliegendes Papier soll nicht seitlich scrollen lassen */
+/* ---------- Random pick: the drawn book ---------- */
+.pick { text-align: center; padding: 20px 0 16px; overflow-x: clip; } /* paper flying away must not cause sideways scrolling */
 .pick .label { margin: 0 0 12px; font-size: .85rem; letter-spacing: .04em; color: var(--muted); }
 .pick h2 { font: 600 1.4rem/1.25 var(--sans); margin: 0 0 4px; color: var(--ink); }
 .pick .a { color: var(--muted); }
 .pick .why { margin: 12px auto 0; max-width: 34ch; font-size: .92rem; color: var(--teal); }
 .pick .row { justify-content: center; margin-top: 16px; }
 
-/* Geschenk in Buchgröße; beim Ziehen liegt es über dem Cover und wird ausgepackt */
+/* Book-sized gift; when drawing, it lies over the cover and gets unwrapped */
 .unwrap { position: relative; width: 140px; height: 210px; margin: 0 auto 16px; }
 .unwrap .cover { margin: 0; }
 .gift { position: absolute; inset: 0; border-radius: 3px 6px 6px 3px; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); }
@@ -121,13 +135,13 @@
 }
 .gift .paper.l { left: 0; border-radius: 3px 0 0 3px; box-shadow: inset 5px 0 0 rgba(0, 0, 0, .18); transform-origin: left bottom; }
 .gift .paper.r { right: 0; border-radius: 0 6px 6px 0; transform-origin: right bottom; }
-/* Band: waagerecht über beide Hälften, senkrecht genau an der Naht */
+/* Ribbon: horizontal across both halves, vertical exactly at the seam */
 .gift .paper::before { content: ''; position: absolute; left: 0; right: 0; top: 38%; height: 14px; background: var(--gift-ribbon); }
 .gift .paper::after { content: ''; position: absolute; top: 0; bottom: 0; width: 7px; background: var(--gift-ribbon); }
 .gift .paper.l::after { right: 0; }
 .gift .paper.r::after { left: 0; }
-/* Schleife: zwei Schlaufen schräg nach oben, Knoten in der Mitte, zwei Bandenden nach unten.
-   Der Schatten hebt sie vom gleichfarbigen Band ab. */
+/* Bow: two loops angled upwards, knot in the middle, two ribbon ends hanging down.
+   The shadow sets it apart from the ribbon of the same colour. */
 .gift .bow {
   position: absolute; top: calc(38% + 7px - 32px); left: calc(50% - 48px); width: 96px; height: 72px;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35));
@@ -154,12 +168,12 @@
 .gift .tail.l { left: 37px; transform: rotate(30deg); }
 .gift .tail.r { right: 37px; transform: rotate(-30deg); }
 
-/* Auspacken in Etappen, bewusst nicht gleichmäßig und nicht spiegelgleich:
-   1. das Geschenk wackelt kurz (Vorfreude)
-   2. die Schleife springt ab und fliegt schräg weg
-   3. das Papier fällt nach außen, links etwas früher als rechts
-   4. das Buch federt hervor, danach erscheinen Titel und Buttons */
-/* Buch und Geschenk wackeln gemeinsam, sonst blitzen die Ecken des Covers hervor */
+/* Unwrapping in stages, deliberately uneven and not mirror-symmetric:
+   1. the gift wiggles briefly (anticipation)
+   2. the bow pops off and flies away at an angle
+   3. the paper falls outwards, the left half a little earlier than the right
+   4. the book springs out, then title and buttons appear */
+/* Book and gift wiggle together, otherwise the corners of the cover peek out */
 .unwrap.open { transform-origin: 50% 100%; animation: gift-wiggle .6s cubic-bezier(.36, .07, .19, .97); }
 .unwrap.open .gift { pointer-events: none; animation: gift-fade .4s ease-in 1.3s forwards; }
 .unwrap.open .bow { animation: bow-off .7s cubic-bezier(.3, 0, .6, 1) .5s forwards; }
@@ -189,12 +203,12 @@
 }
 @keyframes cover-pop { from { transform: scale(.92); } }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
-/* Ohne Animationen bleibt das Papier sonst liegen */
+/* Without animations the paper would otherwise stay in place */
 @media (prefers-reduced-motion: reduce) {
   .unwrap.open .gift { display: none; }
 }
 
-/* ---------- Einstellungen ---------- */
+/* ---------- Settings ---------- */
 .set h2 { font: 600 1.15rem var(--serif); color: var(--ink); margin: 22px 0 8px; }
 .set-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
 .set-item span { flex: 1; }
