@@ -1,4 +1,4 @@
-// Reine Logik ohne Oberfläche – lässt sich daher auch einzeln testen.
+// Pure logic without UI – so it can be tested on its own.
 
 export const STATUS = { unread: 'Ungelesen', reading: 'Lese gerade', read: 'Gelesen' };
 
@@ -7,7 +7,7 @@ export function cleanIsbn(s) {
   return String(s || '').replace(/[^0-9Xx]/g, '').toUpperCase();
 }
 
-// Wandelt ISBN-10 in ISBN-13 um, damit Duplikate zuverlässig erkannt werden.
+// Converts ISBN-10 to ISBN-13 so duplicates are detected reliably.
 export function toIsbn13(s) {
   s = cleanIsbn(s);
   if (s.length === 10) {
@@ -19,15 +19,15 @@ export function toIsbn13(s) {
   return s;
 }
 
-/* ---------- Titel ---------- */
-// Buchdienste (Goodreads, Amazon, Google) hängen gern Reihe, Ausgabe oder Werbung an den Titel, z. B.
-// „Dornen und Rosen (Das Reich der sieben Höfe, #1)“ oder „The Deal - Roman | Demnächst als Serie …“.
-// Klammern mit solchen Angaben fliegen raus, ebenso wie Klammern, die nur den Titel wiederholen.
+/* ---------- Titles ---------- */
+// Book services (Goodreads, Amazon, Google) like to append series, edition or advertising to the title, e.g.
+// "Dornen und Rosen (Das Reich der sieben Höfe, #1)" or "The Deal - Roman | Demnächst als Serie …".
+// Brackets with such details are removed, as are brackets that merely repeat the title.
 const EXTRA_IN_BRACKETS = /#\s*\d|edition|ausgabe|reihe|serie|saga|trilogie|collection|book\s*\d|band\s*\d|teil\s*\d|\d$/i;
 const GENRE_SUFFIX = /(?:\s*:|\s+[-–])\s+(?:[\p{L}-]+\s+){0,2}[\p{L}-]*(?:roman|thriller|krimi)$/iu;
 const EDITION_SUFFIX = /\s*[:\-–]?\s*(?:(?:special|deluxe|limited|german)\s+)?[\p{L}-]*(?:edition|ausgabe)$/iu;
 
-// Liefert den bereinigten Titel und die Reihe, falls sie im Titel stand („(Reihe, #2)“).
+// Returns the cleaned title and the series if it was part of the title ("(Series, #2)").
 export function cleanTitle(raw) {
   const original = String(raw || '').replace(/\s+/g, ' ').trim();
   let t = original.split(' | ')[0];
@@ -46,7 +46,7 @@ export function cleanTitle(raw) {
 
   t = t.replace(GENRE_SUFFIX, '').replace(EDITION_SUFFIX, '');
 
-  // Lange Werbe-Untertitel nach dem letzten Doppelpunkt („Powerless: TikTok made me buy it! …“)
+  // Long advertising subtitles after the last colon ("Powerless: TikTok made me buy it! …")
   const colon = t.lastIndexOf(': ');
   if (colon > 0 && t.slice(colon + 2).split(' ').length >= 10) t = t.slice(0, colon);
 
@@ -54,14 +54,14 @@ export function cleanTitle(raw) {
   return { title: t || original, series };
 }
 
-/* ---------- Reihen ---------- */
-// Reihen werden über den Namen erkannt, Groß-/Kleinschreibung und Leerzeichen am Rand egal.
+/* ---------- Series ---------- */
+// Series are matched by name, ignoring case and surrounding spaces.
 export function seriesKey(book) {
   const name = book.series && book.series.name;
   return name && name.trim() ? name.trim().toLowerCase() : '';
 }
 
-// Band-Nummer als Zahl; Bücher ohne Nummer kommen ans Ende der Reihe.
+// Volume number as a number; books without a number go to the end of the series.
 export function seriesNr(book) {
   const n = parseFloat(String(book.series && book.series.nr || '').replace(',', '.'));
   return isNaN(n) ? Infinity : n;
@@ -73,18 +73,46 @@ export function booksOfSeries(books, key) {
     .sort((a, b) => seriesNr(a) - seriesNr(b) || a.title.localeCompare(b.title));
 }
 
-// Das nächste Buch einer Reihe = der niedrigste Band, der noch nicht gelesen ist.
+// The next book of a series = the lowest volume not read yet.
 export function nextOfSeries(books, key) {
   return booksOfSeries(books, key).find(b => b.status !== 'read') || null;
 }
 
-/* ---------- Zufallsgenerator ---------- */
-// Alle Bücher, die gezogen werden dürfen:
-// – ungelesene Einzelbücher
-// – pro Reihe nur der nächste ungelesene Band
-// – liest du gerade einen Band einer Reihe, kommt aus dieser Reihe nichts
-// filter: '' (alle), 't:Tagname' oder 'l:Listen-ID'
-export function drawCandidates(books, filter = '') {
+/* ---------- Filters ---------- */
+// label: '' (all), 't:tag name' or 'l:list ID'
+export function matchesLabel(book, label) {
+  if (label.startsWith('t:')) return book.tags.includes(label.slice(2));
+  if (label.startsWith('l:')) return book.lists.includes(label.slice(2));
+  return true;
+}
+
+// Genres are matched by name, ignoring case and surrounding spaces.
+export const genreKey = book => String(book.genre || '').trim().toLowerCase();
+export const NO_GENRE = '-';
+
+// genre: '' (all), NO_GENRE (books without a genre) or a genre key
+export function matchesGenre(book, genre) {
+  if (!genre) return true;
+  return genre === NO_GENRE ? !genreKey(book) : genreKey(book) === genre;
+}
+
+// All genres in use, sorted by name; shown in the spelling of the first book found.
+export function genresOf(books) {
+  const names = new Map();
+  for (const b of books) {
+    const key = genreKey(b);
+    if (key && !names.has(key)) names.set(key, b.genre.trim());
+  }
+  return [...names].map(([key, name]) => ({ key, name })).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+}
+
+/* ---------- Random pick ---------- */
+// All books that may be drawn:
+// – unread standalone books
+// – per series only the next unread volume
+// – while you are reading a volume of a series, nothing from that series
+// label: see matchesLabel; genre: see matchesGenre
+export function drawCandidates(books, label = '', genre = '') {
   const out = [];
   const seen = new Set();
   for (const b of books) {
@@ -96,29 +124,27 @@ export function drawCandidates(books, filter = '') {
     const next = nextOfSeries(books, key);
     if (next && next.status === 'unread') out.push(next);
   }
-  if (filter.startsWith('t:')) return out.filter(b => b.tags.includes(filter.slice(2)));
-  if (filter.startsWith('l:')) return out.filter(b => b.lists.includes(filter.slice(2)));
-  return out;
+  return out.filter(b => matchesLabel(b, label) && matchesGenre(b, genre));
 }
 
-/* ---------- Lese-Tracker ---------- */
-// Tage werden als „JJJJ-MM-TT“ in Ortszeit gespeichert, damit ein Eintrag um 23:30 nicht beim nächsten Tag landet.
+/* ---------- Reading tracker ---------- */
+// Days are stored as "YYYY-MM-DD" in local time so an entry at 23:30 does not end up on the next day.
 export function isoDay(date = new Date()) {
   const p = n => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}`;
 }
 
-// Seiten pro Tag: { "2026-11-04": 85, … }
+// Pages per day: { "2026-11-04": 85, … }
 export function pagesByDay(entries) {
   const out = {};
   for (const e of entries) out[e.date] = (out[e.date] || 0) + e.pages;
   return out;
 }
 
-// Alle Tage eines Monats für ein Kalenderraster ab Montag; null = leeres Feld vor dem 1.
+// All days of a month for a calendar grid starting on Monday; null = empty cell before the 1st.
 export function monthGrid(year, month) {
   const first = new Date(year, month, 1);
-  const lead = (first.getDay() + 6) % 7; // Montag = 0
+  const lead = (first.getDay() + 6) % 7; // Monday = 0
   const days = new Date(year, month + 1, 0).getDate();
   return [
     ...Array(lead).fill(null),
@@ -126,7 +152,7 @@ export function monthGrid(year, month) {
   ];
 }
 
-// Tage in Folge mit Lesen. Ist heute noch nichts eingetragen, zählt die Strähne bis gestern weiter.
+// Consecutive days with reading. If nothing is logged today yet, the streak still counts up to yesterday.
 export function readingStreak(byDay, today = new Date()) {
   const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   if (!byDay[isoDay(d)]) d.setDate(d.getDate() - 1);
