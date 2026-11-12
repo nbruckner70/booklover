@@ -96,6 +96,13 @@ export function matchesGenre(book, genre) {
   return genre === NO_GENRE ? !genreKey(book) : genreKey(book) === genre;
 }
 
+// genres: list of genre keys (see matchesGenre); the book must match one of them.
+// An empty list means all genres.
+export function matchesAnyGenre(book, genres) {
+  if (!genres.length) return true;
+  return genres.some(g => matchesGenre(book, g));
+}
+
 // All genres in use, sorted by name; shown in the spelling of the first book found.
 export function genresOf(books) {
   const names = new Map();
@@ -111,8 +118,8 @@ export function genresOf(books) {
 // – unread standalone books
 // – per series only the next unread volume
 // – while you are reading a volume of a series, nothing from that series
-// label: see matchesLabel; genre: see matchesGenre
-export function drawCandidates(books, label = '', genre = '') {
+// label: see matchesLabel; genres: see matchesAnyGenre
+export function drawCandidates(books, label = '', genres = []) {
   const out = [];
   const seen = new Set();
   for (const b of books) {
@@ -124,7 +131,7 @@ export function drawCandidates(books, label = '', genre = '') {
     const next = nextOfSeries(books, key);
     if (next && next.status === 'unread') out.push(next);
   }
-  return out.filter(b => matchesLabel(b, label) && matchesGenre(b, genre));
+  return out.filter(b => matchesLabel(b, label) && matchesAnyGenre(b, genres));
 }
 
 /* ---------- Reading tracker ---------- */

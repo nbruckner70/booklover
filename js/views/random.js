@@ -1,15 +1,28 @@
 // "Zufall" (random) view: draws the next book, respecting series order.
 import { $, toast, emit } from '../ui.js';
 import { store, save } from '../store.js';
-import { drawCandidates, seriesKey, seriesNr, booksOfSeries } from '../logic.js';
-import { giftCard, pickCard } from '../templates.js';
-import { fillLabelSelect, fillGenreSelect } from './library.js';
+import { drawCandidates, genresOf, seriesKey, seriesNr, booksOfSeries } from '../logic.js';
+import { giftCard, pickCard, chip } from '../templates.js';
+import { fillLabelSelect } from './library.js';
 import { openEdit } from '../dialogs/edit.js';
 
 let lastPickId = null;
 let currentPick = null;
+const selGenres = new Set(); // selected genre keys; empty = all genres
 
-const candidates = () => drawCandidates(store.db.books, $('#randFilter').value, $('#randGenre').value);
+const candidates = () => drawCandidates(store.db.books, $('#randFilter').value, [...selGenres]);
+
+// One chip per genre in use. Hidden while no book has a genre yet.
+function renderGenreChips() {
+  const genres = genresOf(store.db.books);
+  // Forget selected genres that no book has any more
+  const inUse = new Set(genres.map(g => g.key));
+  for (const key of selGenres) if (!inUse.has(key)) selGenres.delete(key);
+
+  $('#randGenre').innerHTML = genres.map(g => chip(g.name, 'genre', g.key, selGenres.has(g.key))).join('');
+  $('#randGenreHint').hidden = selGenres.size > 0;
+  $('#randGenreWrap').hidden = !genres.length;
+}
 
 export function resetPick() {
   $('#pick').hidden = true;
@@ -18,7 +31,7 @@ export function resetPick() {
 
 export function renderRandom() {
   fillLabelSelect($('#randFilter'), 'Alle ungelesenen Bücher');
-  fillGenreSelect($('#randGenre'), 'Alle Genres', '', $('#randGenreWrap'));
+  renderGenreChips();
   const cands = candidates();
   const unread = store.db.books.filter(b => b.status === 'unread').length;
   $('#randInfo').textContent = unread
@@ -64,7 +77,15 @@ function draw() {
 
 export function initRandom() {
   $('#randFilter').addEventListener('change', () => { resetPick(); renderRandom(); });
-  $('#randGenre').addEventListener('change', () => { resetPick(); renderRandom(); });
+  $('#randGenre').addEventListener('click', e => {
+    const c = e.target.closest('.chip');
+    if (!c) return;
+    const key = c.dataset.genre;
+    if (selGenres.has(key)) selGenres.delete(key);
+    else selGenres.add(key);
+    resetPick();
+    renderRandom();
+  });
   $('#drawBtn').addEventListener('click', draw);
   $('#pick').addEventListener('click', e => {
     const action = e.target.closest('[data-action]')?.dataset.action;
