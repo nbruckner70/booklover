@@ -2,7 +2,7 @@
 import { $, toast, emit } from '../ui.js';
 import { store, save } from '../store.js';
 import { drawCandidates, genresOf, seriesKey, seriesNr, booksOfSeries } from '../logic.js';
-import { giftCard, pickCard, chip } from '../templates.js';
+import { giftCard, pickCard, checkOption } from '../templates.js';
 import { fillLabelSelect } from './library.js';
 import { openEdit } from '../dialogs/edit.js';
 
@@ -12,15 +12,25 @@ const selGenres = new Set(); // selected genre keys; empty = all genres
 
 const candidates = () => drawCandidates(store.db.books, $('#randFilter').value, [...selGenres]);
 
-// One chip per genre in use. Hidden while no book has a genre yet.
-function renderGenreChips() {
+// Genre dropdown with one checkbox per genre in use. Hidden while no book has a genre yet.
+function renderGenreList() {
   const genres = genresOf(store.db.books);
   // Forget selected genres that no book has any more
   const inUse = new Set(genres.map(g => g.key));
   for (const key of selGenres) if (!inUse.has(key)) selGenres.delete(key);
 
-  $('#randGenre').innerHTML = genres.map(g => chip(g.name, 'genre', g.key, selGenres.has(g.key))).join('');
-  $('#randGenreHint').hidden = selGenres.size > 0;
+  // Rebuilding the list would drop the keyboard focus, so put it back afterwards
+  const list = $('#randGenre');
+  const focused = list.contains(document.activeElement) ? document.activeElement.value : null;
+  list.innerHTML = checkOption('Alle Genres', '', !selGenres.size, 'all')
+    + genres.map(g => checkOption(g.name, g.key, selGenres.has(g.key))).join('');
+  if (focused !== null) [...list.querySelectorAll('input')].find(i => i.value === focused)?.focus();
+
+  // Closed dropdown: "Alle Genres", up to two names or the number of genres
+  const names = genres.filter(g => selGenres.has(g.key)).map(g => g.name);
+  $('#randGenreSum').textContent = !names.length ? 'Alle Genres'
+    : names.length <= 2 ? names.join(', ')
+    : `${names.length} Genres`;
   $('#randGenreWrap').hidden = !genres.length;
 }
 
@@ -31,7 +41,7 @@ export function resetPick() {
 
 export function renderRandom() {
   fillLabelSelect($('#randFilter'), 'Alle ungelesenen Bücher');
-  renderGenreChips();
+  renderGenreList();
   const cands = candidates();
   const unread = store.db.books.filter(b => b.status === 'unread').length;
   $('#randInfo').textContent = unread
@@ -77,14 +87,19 @@ function draw() {
 
 export function initRandom() {
   $('#randFilter').addEventListener('change', () => { resetPick(); renderRandom(); });
-  $('#randGenre').addEventListener('click', e => {
-    const c = e.target.closest('.chip');
-    if (!c) return;
-    const key = c.dataset.genre;
-    if (selGenres.has(key)) selGenres.delete(key);
-    else selGenres.add(key);
+  $('#randGenre').addEventListener('change', e => {
+    const key = e.target.value;
+    if (!key) selGenres.clear(); // "Alle Genres"
+    else if (e.target.checked) selGenres.add(key);
+    else selGenres.delete(key);
     resetPick();
     renderRandom();
+  });
+  // The dropdown stays open while ticking; it closes on a tap outside or with Escape
+  const drop = $('#randGenreDrop');
+  document.addEventListener('click', e => { if (drop.open && !drop.contains(e.target)) drop.open = false; });
+  drop.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && drop.open) { drop.open = false; drop.querySelector('summary').focus(); }
   });
   $('#drawBtn').addEventListener('click', draw);
   $('#pick').addEventListener('click', e => {
