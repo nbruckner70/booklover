@@ -151,6 +151,11 @@ export function settingsItem(name, count, kind, key) {
 }
 
 /* ---------- Edit ---------- */
+// One entry of a multi-select dropdown (.multi)
+export function checkOption(label, value, checked, cls = '') {
+  return `<label class="opt ${cls}"><input type="checkbox" value="${esc(value)}"${checked ? ' checked' : ''}>${esc(label)}</label>`;
+}
+
 export function chip(label, attr, value, pressed) {
   return `<button class="chip" data-${attr}="${esc(value)}" aria-pressed="${pressed}">${esc(label)}</button>`;
 }
