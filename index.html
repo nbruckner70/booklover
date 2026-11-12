@@ -73,10 +73,12 @@
     <label>Auswahl
       <select id="randFilter"></select>
     </label>
-    <fieldset id="randGenreWrap">
-      <legend>Genres</legend>
-      <div class="chips" id="randGenre"></div>
-      <p class="hint" id="randGenreHint">Kein Genre gewählt, also kommen alle infrage.</p>
+    <fieldset class="multi-field" id="randGenreWrap">
+      <legend>Genre</legend>
+      <details class="multi" id="randGenreDrop">
+        <summary><span id="randGenreSum">Alle Genres</span></summary>
+        <div class="multi-list" id="randGenre"></div>
+      </details>
     </fieldset>
     <button class="btn accent big" id="drawBtn">Nächstes Buch ziehen</button>
     <p class="hint" id="randInfo"></p>
