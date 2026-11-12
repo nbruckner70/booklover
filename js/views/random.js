@@ -98,6 +98,16 @@ export function initRandom() {
   // The dropdown stays open while ticking; it closes on a tap outside or with Escape
   const drop = $('#randGenreDrop');
   document.addEventListener('click', e => { if (drop.open && !drop.contains(e.target)) drop.open = false; });
+  // The open list must end above the bottom navigation, so it may only be as tall as the space below it
+  const fitList = () => {
+    if (!drop.open) return;
+    const list = $('#randGenre');
+    const space = $('.tabs').getBoundingClientRect().top - list.getBoundingClientRect().top - 12;
+    list.style.maxHeight = `${Math.max(space, 160)}px`;
+  };
+  drop.addEventListener('toggle', fitList);
+  window.addEventListener('scroll', fitList, { passive: true });
+  window.addEventListener('resize', fitList);
   drop.addEventListener('keydown', e => {
     if (e.key === 'Escape' && drop.open) { drop.open = false; drop.querySelector('summary').focus(); }
   });
