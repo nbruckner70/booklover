@@ -99,6 +99,36 @@ label input, label select, label textarea { margin-top: 4px; color: var(--text);
 .chip { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 6px 12px; font-size: .88rem; min-height: 36px; }
 .chip[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: var(--bg); }
 
+/* Multi-select dropdown: looks like a select, opens a list with checkboxes */
+.multi-field { margin-bottom: 10px; }
+.multi-field legend { margin-bottom: 4px; }
+.multi { position: relative; }
+.multi summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; min-height: 44px;
+}
+.multi summary::-webkit-details-marker { display: none; }
+.multi summary span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.multi summary::after {
+  content: ''; width: 7px; height: 7px; margin: -4px 4px 0 0;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg);
+}
+.multi[open] summary::after { margin-top: 4px; transform: rotate(-135deg); }
+.multi-list {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 4;
+  max-height: 50vh; overflow-y: auto; padding: 4px 0;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .18);
+}
+.multi-list .opt {
+  display: flex; align-items: center; gap: 10px; margin: 0;
+  padding: 10px 12px; min-height: 44px; font-size: 1rem; color: var(--text); cursor: pointer;
+}
+.multi-list .opt.all { border-bottom: 1px solid var(--line); }
+.multi-list input { width: 20px; height: 20px; min-height: 0; margin: 0; padding: 0; flex: none; accent-color: var(--accent); }
+
 /* Stars (input) */
 .rate-input { position: relative; display: inline-block; line-height: 1; white-space: nowrap; color: var(--star-empty); }
 .stars-fill { position: absolute; left: 0; top: 0; overflow: hidden; color: var(--accent); }
