@@ -159,6 +159,16 @@ export function monthGrid(year, month) {
   ];
 }
 
+// The book among `books` whose progress was logged last, or null.
+// Entries are kept in the order they were added, so the last matching one wins (not the latest reading day).
+export function lastLoggedBook(entries, books) {
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const book = books.find(b => b.id === entries[i].book);
+    if (book) return book;
+  }
+  return null;
+}
+
 // Consecutive days with reading. If nothing is logged today yet, the streak still counts up to yesterday.
 export function readingStreak(byDay, today = new Date()) {
   const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
