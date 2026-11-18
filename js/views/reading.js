@@ -1,7 +1,7 @@
 // "Lesen" (reading) view: log pages read (from–to) per day and see them in a month calendar.
 import { $, toast } from '../ui.js';
 import { store, addReading, deleteReading } from '../store.js';
-import { isoDay, pagesByDay, monthGrid, readingStreak } from '../logic.js';
+import { isoDay, pagesByDay, monthGrid, readingStreak, lastLoggedBook } from '../logic.js';
 import { calendar, readingStats, dayEntries, longDay, monthTitle, pickedBook, bookHits } from '../templates.js';
 
 let year = new Date().getFullYear(), month = new Date().getMonth(); // month shown
@@ -13,9 +13,13 @@ const bookTitle = id => (findBook(id) || {}).title || '';
 const byTitle = (a, b) => a.title.localeCompare(b.title, 'de');
 const readingNow = () => store.db.books.filter(b => b.status === 'reading').sort(byTitle);
 
-// Without an explicit choice, the first book currently being read is preselected.
+// Without an explicit choice, the book currently being read whose progress was logged last is preselected.
+// If none of them has an entry yet: the first book currently being read.
 function currentBook() {
-  if (chosenBook === null) return readingNow()[0] || null;
+  if (chosenBook === null) {
+    const now = readingNow();
+    return lastLoggedBook(store.db.reading, now) || now[0] || null;
+  }
   return chosenBook ? findBook(chosenBook) || null : null;
 }
 
